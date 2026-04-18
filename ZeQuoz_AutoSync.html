@@ -1,0 +1,2758 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZeQuoz System</title>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg2: #111111;
+  --bg3: #1a1a1a;
+  --card: #161616;
+  --border: #2a2a2a;
+  --text: #f0f0f0;
+  --text2: #aaaaaa;
+  --accent: #FFD700;
+  --accent2: #FFA500;
+  --accent-dim: rgba(255,215,0,0.12);
+  --danger: #ff4444;
+  --success: #22c55e;
+  --info: #3b82f6;
+  --sidebar-w: 240px;
+  --radius: 14px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"] {
+  --bg: #f5f5f5;
+  --bg2: #eeeeee;
+  --bg3: #e0e0e0;
+  --card: #ffffff;
+  --border: #dddddd;
+  --text: #111111;
+  --text2: #555555;
+  --accent: #e6b800;
+  --accent2: #cc8800;
+  --accent-dim: rgba(230,184,0,0.12);
+  --shadow: 0 4px 24px rgba(0,0,0,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:background var(--transition),color var(--transition);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+[lang="ar"] body,[dir="rtl"]{font-family:'Segoe UI',Tahoma,Arial,sans-serif;}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+
+/* ─── LOADING SCREEN ─── */
+#loadingScreen{
+  position:fixed;inset:0;
+  background:#0a0a0a;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:9999;
+  transition:opacity 0.6s ease;
+}
+#loadingScreen.hide{opacity:0;pointer-events:none;}
+.loading-logo-wrap{
+  display:flex;flex-direction:column;
+  align-items:center;gap:20px;
+}
+.loading-title{
+  font-size:2rem;font-weight:800;
+  color:#FFD700;
+  letter-spacing:3px;
+  animation:fadeInUp 0.8s ease forwards;
+  opacity:0;
+}
+.loading-sub{
+  font-size:0.85rem;color:#aaa;
+  letter-spacing:2px;text-transform:uppercase;
+  animation:fadeInUp 0.8s 0.2s ease forwards;
+  opacity:0;
+}
+.loading-bar{
+  width:200px;height:3px;
+  background:#222;border-radius:4px;
+  overflow:hidden;
+  animation:fadeInUp 0.8s 0.4s ease forwards;
+  opacity:0;
+}
+.loading-bar-inner{
+  height:100%;
+  background:linear-gradient(90deg,#FFD700,#FFA500);
+  border-radius:4px;
+  animation:loadBar 2s ease forwards;
+  width:0%;
+}
+@keyframes loadBar{0%{width:0%}100%{width:100%}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── LOGIN SCREEN ─── */
+#loginScreen{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:8888;
+  transition:opacity 0.5s ease;
+}
+#loginScreen.hide{opacity:0;pointer-events:none;}
+.login-box{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:48px 40px;
+  width:100%;max-width:420px;
+  box-shadow:var(--shadow);
+  animation:slideUp 0.5s ease;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+.login-logo{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:32px;}
+.login-logo-text{font-size:1.6rem;font-weight:800;color:var(--accent);}
+.login-sub{text-align:center;color:var(--text2);margin-bottom:28px;font-size:0.9rem;}
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;margin-bottom:6px;font-size:0.85rem;color:var(--text2);font-weight:500;}
+.form-group input{
+  width:100%;padding:12px 16px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text);
+  font-size:0.95rem;
+  transition:border-color var(--transition);
+  outline:none;
+}
+.form-group input:focus{border-color:var(--accent);}
+.login-error{color:var(--danger);font-size:0.85rem;text-align:center;margin-bottom:12px;display:none;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 20px;
+  border-radius:10px;
+  font-size:0.9rem;font-weight:600;
+  cursor:pointer;
+  border:none;
+  transition:all var(--transition);
+  white-space:nowrap;
+}
+.btn-primary{background:var(--accent);color:#000;}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);}
+.btn-full{width:100%;padding:14px;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-danger:hover{opacity:0.85;}
+.btn-success{background:var(--success);color:#fff;}
+.btn-success:hover{opacity:0.85;}
+.btn-sm{padding:7px 14px;font-size:0.8rem;}
+.btn-icon{padding:8px;border-radius:8px;}
+
+/* ─── MAIN APP ─── */
+#app{display:none;height:100vh;overflow:hidden;}
+#app.show{display:flex;}
+
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;left:0;top:0;bottom:0;
+  z-index:1000;
+  transition:transform var(--transition);
+  overflow-y:auto;
+}
+[dir="rtl"] .sidebar{left:auto;right:0;border-right:none;border-left:1px solid var(--border);}
+.sidebar-header{
+  padding:20px 16px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--bg2);z-index:1;
+}
+.sidebar-logo-text{font-size:1.1rem;font-weight:800;color:var(--accent);}
+.sidebar-logo-sub{font-size:0.65rem;color:var(--text2);letter-spacing:1px;}
+.sidebar-nav{flex:1;padding:12px 0;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 18px;
+  cursor:pointer;
+  border-radius:10px;
+  margin:2px 8px;
+  transition:all var(--transition);
+  color:var(--text2);
+  font-size:0.88rem;
+  font-weight:500;
+}
+.nav-item:hover{background:var(--accent-dim);color:var(--accent);}
+.nav-item.active{background:var(--accent);color:#000;font-weight:700;}
+.nav-item .nav-icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0;}
+.sidebar-footer{
+  padding:16px;
+  border-top:1px solid var(--border);
+}
+
+/* ─── MAIN CONTENT ─── */
+.main-content{
+  margin-left:var(--sidebar-w);
+  flex:1;
+  display:flex;flex-direction:column;
+  height:100vh;
+  overflow:hidden;
+  transition:margin var(--transition);
+}
+[dir="rtl"] .main-content{margin-left:0;margin-right:var(--sidebar-w);}
+
+/* ─── TOPBAR ─── */
+.topbar{
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  flex-shrink:0;
+}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.hamburger{
+  display:none;
+  background:none;border:none;color:var(--text);
+  font-size:1.4rem;cursor:pointer;padding:4px;
+}
+.page-title{font-size:1.1rem;font-weight:700;color:var(--text);}
+.toggle-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;padding:6px 12px;
+  color:var(--text2);font-size:0.8rem;
+  cursor:pointer;transition:all var(--transition);
+  display:flex;align-items:center;gap:6px;
+}
+.toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
+.user-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--accent);color:#000;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:0.9rem;cursor:pointer;
+}
+
+/* ─── PAGE CONTENT ─── */
+.page-content{
+  flex:1;
+  overflow-y:auto;
+  padding:24px;
+}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ─── CARDS ─── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  transition:border-color var(--transition),box-shadow var(--transition);
+}
+.card:hover{border-color:rgba(255,215,0,0.3);}
+.card-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  display:flex;flex-direction:column;gap:8px;
+  position:relative;overflow:hidden;
+  transition:all var(--transition);
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.stat-label{font-size:0.78rem;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:1px;}
+.stat-value{font-size:1.7rem;font-weight:800;color:var(--accent);}
+.stat-sub{font-size:0.78rem;color:var(--text2);}
+.stat-icon{position:absolute;right:16px;top:16px;font-size:1.8rem;opacity:0.15;}
+[dir="rtl"] .stat-icon{right:auto;left:16px;}
+
+/* ─── GRIDS ─── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+
+/* ─── TABLE ─── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+thead th{
+  background:var(--bg3);
+  padding:12px 16px;
+  text-align:left;
+  color:var(--text2);
+  font-weight:600;
+  font-size:0.78rem;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  white-space:nowrap;
+}
+[dir="rtl"] thead th{text-align:right;}
+tbody tr{border-top:1px solid var(--border);transition:background var(--transition);}
+tbody tr:hover{background:var(--accent-dim);}
+tbody td{padding:12px 16px;color:var(--text);vertical-align:middle;}
+[dir="rtl"] tbody td{text-align:right;}
+
+/* ─── BADGES ─── */
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:20px;
+  font-size:0.72rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+.badge-success{background:rgba(34,197,94,0.15);color:#22c55e;}
+.badge-danger{background:rgba(255,68,68,0.15);color:#ff4444;}
+.badge-warning{background:rgba(255,215,0,0.15);color:#FFD700;}
+.badge-info{background:rgba(59,130,246,0.15);color:#3b82f6;}
+.badge-gray{background:var(--bg3);color:var(--text2);}
+
+/* ─── PROGRESS ─── */
+.progress-bar{background:var(--bg3);border-radius:4px;height:8px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s ease;}
+
+/* ─── MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.75);
+  display:flex;align-items:center;justify-content:center;
+  z-index:5000;
+  opacity:0;pointer-events:none;
+  transition:opacity var(--transition);
+  padding:16px;
+}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-box{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  width:100%;max-width:520px;
+  max-height:90vh;
+  overflow-y:auto;
+  transform:scale(0.9);
+  transition:transform var(--transition);
+  box-shadow:0 20px 60px rgba(0,0,0,0.7);
+}
+.modal-overlay.show .modal-box{transform:scale(1);}
+.modal-header{
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-title{font-size:1rem;font-weight:700;color:var(--text);}
+.modal-close{
+  background:none;border:none;color:var(--text2);
+  font-size:1.4rem;cursor:pointer;line-height:1;
+  transition:color var(--transition);
+}
+.modal-close:hover{color:var(--danger);}
+.modal-body{padding:24px;}
+.modal-footer{
+  padding:16px 24px;
+  border-top:1px solid var(--border);
+  display:flex;gap:10px;justify-content:flex-end;
+}
+[dir="rtl"] .modal-footer{justify-content:flex-start;}
+
+/* ─── FORM ─── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-row.single{grid-template-columns:1fr;}
+.form-group-sm label{display:block;margin-bottom:5px;font-size:0.8rem;color:var(--text2);}
+.form-group-sm input,.form-group-sm select,.form-group-sm textarea{
+  width:100%;padding:10px 12px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:0.88rem;
+  outline:none;transition:border-color var(--transition);
+  font-family:inherit;
+}
+.form-group-sm input:focus,.form-group-sm select:focus,.form-group-sm textarea:focus{border-color:var(--accent);}
+.form-group-sm select option{background:var(--bg2);color:var(--text);}
+.form-group-sm textarea{resize:vertical;min-height:80px;}
+
+/* ─── SECTION HEADER ─── */
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;flex-wrap:wrap;gap:12px;
+}
+.section-title{font-size:1.1rem;font-weight:700;color:var(--text);}
+
+/* ─── TABS ─── */
+.tabs{display:flex;gap:4px;background:var(--bg3);padding:4px;border-radius:10px;width:fit-content;margin-bottom:20px;flex-wrap:wrap;}
+.tab-btn{
+  padding:8px 16px;border-radius:8px;
+  background:transparent;border:none;
+  color:var(--text2);font-size:0.85rem;font-weight:500;
+  cursor:pointer;transition:all var(--transition);
+}
+.tab-btn.active{background:var(--accent);color:#000;font-weight:700;}
+
+/* ─── NOTES ─── */
+.note-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:12px 16px;
+  margin-bottom:10px;
+  border-left:3px solid var(--accent);
+}
+[dir="rtl"] .note-card{border-left:none;border-right:3px solid var(--accent);}
+.note-date{font-size:0.72rem;color:var(--text2);}
+.note-text{font-size:0.88rem;color:var(--text);margin-top:4px;}
+
+/* ─── OVERLAY FOR MOBILE SIDEBAR ─── */
+.sidebar-overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:999;
+}
+.sidebar-overlay.show{display:block;}
+
+/* ─── TOAST ─── */
+#toastContainer{
+  position:fixed;bottom:24px;right:24px;
+  z-index:9999;display:flex;flex-direction:column;gap:8px;
+}
+[dir="rtl"] #toastContainer{right:auto;left:24px;}
+.toast{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px 20px;
+  font-size:0.88rem;color:var(--text);
+  box-shadow:var(--shadow);
+  animation:toastIn 0.3s ease;
+  display:flex;align-items:center;gap:10px;
+  min-width:240px;
+}
+.toast.success{border-color:var(--success);}
+.toast.error{border-color:var(--danger);}
+.toast.warning{border-color:var(--accent);}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+/* ─── CELEBRATION ─── */
+.confetti-piece{
+  position:fixed;pointer-events:none;
+  width:10px;height:10px;
+  border-radius:2px;
+  animation:confettiFall 3s ease-in forwards;
+  z-index:9998;
+}
+@keyframes confettiFall{
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+  100%{transform:translateY(100vh) rotate(720deg);opacity:0;}
+}
+
+/* ─── Z-DINO LOGO ─── */
+.z-dino-wrap{
+  display:inline-flex;align-items:center;justify-content:center;
+  position:relative;width:42px;height:42px;
+  flex-shrink:0;
+}
+.z-dino-svg{
+  width:100%;height:100%;overflow:visible;
+  animation:dinoFloat 3s ease-in-out infinite;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+.z-dino-wrap:hover .z-dino-svg{
+  filter:drop-shadow(0 0 8px #FFD700) drop-shadow(0 0 16px rgba(255,215,0,0.4));
+}
+.dino-wings{transform-origin:22px 18px;animation:wingFlap 0.5s ease-in-out infinite;}
+.dino-eye{transform-origin:31px 14px;animation:eyeGlow 2s ease-in-out infinite;}
+.dino-tail{transform-origin:5px 28px;animation:tailWag 0.5s ease-in-out infinite;}
+@keyframes dinoFloat{
+  0%,100%{transform:translateY(0px) rotate(-2deg);}
+  33%{transform:translateY(-5px) rotate(1deg);}
+  66%{transform:translateY(-2px) rotate(-1deg);}
+}
+@keyframes wingFlap{
+  0%,100%{transform:scaleY(1);}
+  50%{transform:scaleY(0.3);}
+}
+@keyframes eyeGlow{
+  0%,100%{opacity:1;}
+  50%{opacity:0.4;}
+}
+@keyframes tailWag{
+  0%,100%{transform:rotate(0deg);}
+  50%{transform:rotate(15deg);}
+}
+
+/* ─── LOADING DINO (bigger) ─── */
+.z-dino-wrap.large{width:80px;height:80px;}
+.z-dino-wrap.large .z-dino-svg{
+  animation:dinoFlyBig 3.8s cubic-bezier(0.45,0.05,0.55,0.95) infinite;
+}
+@keyframes dinoFlyBig{
+  0%{transform:translate(0,0) rotate(0deg) scale(1);}
+  15%{transform:translate(15px,-20px) rotate(45deg) scale(0.85);}
+  35%{transform:translate(35px,-10px) rotate(180deg) scale(0.78);}
+  55%{transform:translate(25px,10px) rotate(270deg) scale(0.82);}
+  72%{transform:translate(8px,-5px) rotate(340deg) scale(0.92);}
+  88%{transform:translate(-4px,2px) rotate(358deg) scale(1.04);}
+  100%{transform:translate(0,0) rotate(360deg) scale(1);}
+}
+
+/* ─── WINNER BADGE ─── */
+.winner-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:linear-gradient(135deg,#FFD700,#FFA500);
+  color:#000;font-size:0.7rem;font-weight:800;
+  padding:2px 8px;border-radius:20px;
+  text-transform:uppercase;
+}
+
+/* ─── CLIENT CARD ─── */
+.client-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;
+  transition:all var(--transition);cursor:pointer;
+}
+.client-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
+.client-name{font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:6px;}
+.client-info{font-size:0.78rem;color:var(--text2);display:flex;flex-wrap:wrap;gap:8px;}
+
+/* ─── MEDIA PLAN TABLE ─── */
+.media-day{font-weight:700;color:var(--accent);}
+
+/* ─── PERSONAL TRACKER ─── */
+.tracker-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid var(--border);
+}
+.tracker-item:last-child{border-bottom:none;}
+.tracker-label{font-size:0.9rem;color:var(--text);font-weight:500;}
+.tracker-controls{display:flex;align-items:center;gap:10px;}
+.tracker-count{
+  font-size:1.2rem;font-weight:800;color:var(--accent);
+  min-width:32px;text-align:center;
+}
+.tracker-btn{
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--bg2);color:var(--text);
+  font-size:1.1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--transition);
+}
+.tracker-btn:hover{background:var(--accent);color:#000;border-color:var(--accent);}
+
+/* ─── EDITABLE FIELDS ─── */
+.editable{
+  cursor:pointer;
+  padding:2px 6px;border-radius:4px;
+  transition:background var(--transition);
+  display:inline-block;
+}
+.editable:hover{background:var(--accent-dim);}
+
+/* ─── SEARCH ─── */
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:8px 14px;
+  flex:1;max-width:320px;
+}
+.search-box input{
+  background:none;border:none;outline:none;
+  color:var(--text);font-size:0.88rem;width:100%;
+}
+.search-box span{color:var(--text2);font-size:0.9rem;}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width:768px){
+  :root{--sidebar-w:0px;}
+  .sidebar{transform:translateX(-100%);width:260px;}
+  [dir="rtl"] .sidebar{transform:translateX(100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-content{margin-left:0!important;margin-right:0!important;}
+  .hamburger{display:flex;}
+  .grid-4{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:repeat(2,1fr);}
+  .page-content{padding:16px;}
+  .topbar{padding:0 16px;}
+  .form-row{grid-template-columns:1fr;}
+  .section-header{flex-direction:column;align-items:flex-start;}
+  .search-box{max-width:100%;}
+  .tabs{width:100%;}
+  .tab-btn{flex:1;text-align:center;}
+  .modal-box{max-width:100%;}
+  .topbar-right .toggle-btn span{display:none;}
+}
+@media (max-width:480px){
+  .grid-4{grid-template-columns:1fr;}
+  .grid-3{grid-template-columns:1fr;}
+  .grid-2{grid-template-columns:1fr;}
+  .stat-value{font-size:1.4rem;}
+  .login-box{padding:32px 20px;}
+}
+@media (min-width:769px){
+  .hamburger{display:none;}
+  .sidebar-overlay{display:none!important;}
+}
+
+/* ─── MACHINE MODE ─── */
+.machine-mode-card{
+  background:linear-gradient(135deg,var(--card),var(--bg2));
+  border:1px solid var(--accent);
+  border-radius:var(--radius);padding:20px;
+  position:relative;overflow:hidden;
+}
+.machine-mode-card::before{
+  content:'⚡ MACHINE MODE';
+  position:absolute;top:10px;right:14px;
+  font-size:0.65rem;color:var(--accent);
+  font-weight:800;letter-spacing:2px;
+  opacity:0.6;
+}
+[dir="rtl"] .machine-mode-card::before{right:auto;left:14px;}
+
+/* ─── GOAL CARD ─── */
+.goal-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;
+  transition:all var(--transition);
+}
+.goal-title{font-size:0.95rem;font-weight:700;margin-bottom:4px;}
+.goal-meta{font-size:0.8rem;color:var(--text2);margin-bottom:12px;}
+.goal-numbers{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.goal-current{font-size:1.4rem;font-weight:800;color:var(--accent);}
+.goal-target{font-size:0.85rem;color:var(--text2);}
+
+/* ─── TEAM CARD ─── */
+.team-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.team-avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--accent);color:#000;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1rem;flex-shrink:0;
+}
+.team-info{flex:1;}
+.team-name{font-size:0.9rem;font-weight:700;}
+.team-role{font-size:0.78rem;color:var(--text2);margin-top:2px;}
+
+/* ─── AD CARD ─── */
+.ad-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;
+  transition:all var(--transition);
+}
+.ad-card.winner{border-color:var(--accent);}
+.ad-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+
+/* misc */
+.sep{height:1px;background:var(--border);margin:20px 0;}
+.text-accent{color:var(--accent);}
+.text-danger{color:var(--danger);}
+.text-success{color:var(--success);}
+.text-muted{color:var(--text2);}
+.fw-bold{font-weight:700;}
+.mt-auto{margin-top:auto;}
+.gap-8{gap:8px;}
+.flex-center{display:flex;align-items:center;justify-content:center;}
+.flex-between{display:flex;align-items:center;justify-content:space-between;}
+.flex-wrap{flex-wrap:wrap;}
+.d-flex{display:flex;align-items:center;}
+.mb-16{margin-bottom:16px;}
+.mb-8{margin-bottom:8px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ LOADING SCREEN ═══════════════════════════ -->
+<div id="loadingScreen">
+  <div class="loading-logo-wrap">
+    <div class="z-dino-wrap large">
+      <svg class="z-dino-svg" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+        <path class="dino-tail" d="M5 28C2 32 3 38 8 40" stroke="#FFD700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <g class="dino-wings">
+          <path d="M22 18L10 10C8 8 4 12 10 16L22 18Z" fill="#FFD700" opacity="0.85"/>
+          <path d="M22 18L34 10C36 8 40 12 34 16L22 18Z" fill="#FFD700" opacity="0.85"/>
+        </g>
+        <path d="M12 22C12 14 32 14 32 22C32 32 12 32 12 22Z" fill="#FFD700"/>
+        <circle class="dino-eye" cx="31" cy="14" r="2.5" fill="#00ff88"/>
+        <circle cx="31" cy="14" r="1.2" fill="#000"/>
+        <path d="M19 20H25L19 26H25" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="loading-title">ZeQuoz System</div>
+    <div class="loading-sub">Business Operating System</div>
+    <div class="loading-bar"><div class="loading-bar-inner" id="loadBar"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ LOGIN SCREEN ═══════════════════════════ -->
+<div id="loginScreen" style="display:none;">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="z-dino-wrap">
+        <svg class="z-dino-svg" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+          <path class="dino-tail" d="M5 28C2 32 3 38 8 40" stroke="#FFD700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <g class="dino-wings">
+            <path d="M22 18L10 10C8 8 4 12 10 16L22 18Z" fill="#FFD700" opacity="0.85"/>
+            <path d="M22 18L34 10C36 8 40 12 34 16L22 18Z" fill="#FFD700" opacity="0.85"/>
+          </g>
+          <path d="M12 22C12 14 32 14 32 22C32 32 12 32 12 22Z" fill="#FFD700"/>
+          <circle class="dino-eye" cx="31" cy="14" r="2.5" fill="#00ff88"/>
+          <circle cx="31" cy="14" r="1.2" fill="#000"/>
+          <path d="M19 20H25L19 26H25" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="login-logo-text">ZeQuoz System</div>
+        <div style="font-size:0.7rem;color:var(--text2);">Digital Marketing OS</div>
+      </div>
+    </div>
+    <div class="login-sub" id="loginSubText">Welcome back! Please sign in.</div>
+    <div class="login-error" id="loginError">Invalid credentials. Try admin / admin</div>
+    <div class="form-group">
+      <label id="lblEmail">Username</label>
+      <input type="text" id="loginEmail" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label id="lblPass">Password</label>
+      <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" id="loginBtn">Sign In</button>
+    <div style="text-align:center;margin-top:16px;">
+      <button class="toggle-btn" onclick="toggleLangLogin()" id="langBtnLogin">🌍 عربي</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ MAIN APP ═══════════════════════════ -->
+<div id="app">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="z-dino-wrap">
+        <svg class="z-dino-svg" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+          <path class="dino-tail" d="M5 28C2 32 3 38 8 40" stroke="#FFD700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <g class="dino-wings">
+            <path d="M22 18L10 10C8 8 4 12 10 16L22 18Z" fill="#FFD700" opacity="0.85"/>
+            <path d="M22 18L34 10C36 8 40 12 34 16L22 18Z" fill="#FFD700" opacity="0.85"/>
+          </g>
+          <path d="M12 22C12 14 32 14 32 22C32 32 12 32 12 22Z" fill="#FFD700"/>
+          <circle class="dino-eye" cx="31" cy="14" r="2.5" fill="#00ff88"/>
+          <circle cx="31" cy="14" r="1.2" fill="#000"/>
+          <path d="M19 20H25L19 26H25" stroke="#000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">ZeQuoz</div>
+        <div class="sidebar-logo-sub" data-i18n="system">SYSTEM</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebarNav">
+      <div class="nav-item active" onclick="navTo('dashboard',this)" data-page="dashboard">
+        <span class="nav-icon">📊</span><span data-i18n="dashboard">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="navTo('crm',this)" data-page="crm">
+        <span class="nav-icon">👥</span><span data-i18n="crm">CRM</span>
+      </div>
+      <div class="nav-item" onclick="navTo('ads',this)" data-page="ads">
+        <span class="nav-icon">📢</span><span data-i18n="ads">Ads Manager</span>
+      </div>
+      <div class="nav-item" onclick="navTo('media',this)" data-page="media">
+        <span class="nav-icon">📅</span><span data-i18n="media">Media Plan</span>
+      </div>
+      <div class="nav-item" onclick="navTo('team',this)" data-page="team">
+        <span class="nav-icon">🤝</span><span data-i18n="team">Team</span>
+      </div>
+      <div class="nav-item" onclick="navTo('sales',this)" data-page="sales">
+        <span class="nav-icon">💰</span><span data-i18n="sales">Sales</span>
+      </div>
+      <div class="nav-item" onclick="navTo('content',this)" data-page="content">
+        <span class="nav-icon">✍️</span><span data-i18n="content">Content</span>
+      </div>
+      <div class="nav-item" onclick="navTo('goals',this)" data-page="goals">
+        <span class="nav-icon">🎯</span><span data-i18n="goals">Goals</span>
+      </div>
+      <div class="nav-item" onclick="navTo('personal',this)" data-page="personal">
+        <span class="nav-icon">🕌</span><span data-i18n="personal">Personal</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div style="font-size:0.72rem;color:var(--text2);margin-bottom:8px;" data-i18n="loggedAs">Logged in as</div>
+      <div style="font-size:0.88rem;font-weight:700;color:var(--accent);">Mahmoud</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%;" onclick="doLogout()" data-i18n="logout">Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" id="mainContent">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger" onclick="toggleSidebar()">☰</button>
+        <span class="page-title" id="pageTitle" data-i18n="dashboard">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <span class="badge badge-info" id="ghSyncBadge" title="GitHub Sync Status" style="cursor:default;">☁️ Not configured</span>
+        <button class="toggle-btn" onclick="manualPull()" title="Pull latest data from GitHub">🔄 <span>Refresh</span></button>
+        <button class="toggle-btn" onclick="toggleTheme()" id="themeBtn">
+          🌙 <span data-i18n="dark">Dark</span>
+        </button>
+        <button class="toggle-btn" onclick="toggleLang()" id="langBtn">
+          🌍 <span id="langLabel">العربية</span>
+        </button>
+        <div class="user-avatar" title="Mahmoud">M</div>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <div class="page-content">
+
+      <!-- ════════ DASHBOARD PAGE ════════ -->
+      <div class="page active" id="page-dashboard">
+        <div style="margin-bottom:24px;">
+          <div style="font-size:1.4rem;font-weight:800;color:var(--text);" id="welcomeMsg">
+            👋 Welcome, <span style="color:var(--accent);">Mahmoud</span>
+          </div>
+          <div style="font-size:0.85rem;color:var(--text2);margin-top:4px;" id="dashDate"></div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="grid-4 mb-16" id="statCards">
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="totalClients">Total Clients</div>
+            <div class="stat-value" id="st-clients">0</div>
+            <div class="stat-sub" data-i18n="registered">Registered</div>
+            <div class="stat-icon">👥</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="activeClients">Active Clients</div>
+            <div class="stat-value" id="st-active">0</div>
+            <div class="stat-sub" data-i18n="currentlyActive">Currently Active</div>
+            <div class="stat-icon">✅</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="totalRevenue">Total Revenue</div>
+            <div class="stat-value" id="st-revenue">$0</div>
+            <div class="stat-sub" data-i18n="allClients">All Clients</div>
+            <div class="stat-icon">💵</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="totalProfit">Total Profit</div>
+            <div class="stat-value" id="st-profit">$0</div>
+            <div class="stat-sub" data-i18n="est33">Est. 33%</div>
+            <div class="stat-icon">📈</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="pendingMoney">Pending Money</div>
+            <div class="stat-value text-accent editable" id="st-pending" onclick="editPending()">$28,000</div>
+            <div class="stat-sub" data-i18n="clickEdit">Click to edit</div>
+            <div class="stat-icon">⏳</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="moneyOutside">Money Outside</div>
+            <div class="stat-value" id="st-outside">$0</div>
+            <div class="stat-sub" data-i18n="fromClients">From Clients</div>
+            <div class="stat-icon">💸</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="teamMembers">Team Members</div>
+            <div class="stat-value" id="st-team">0</div>
+            <div class="stat-sub" data-i18n="active">Active</div>
+            <div class="stat-icon">🤝</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label" data-i18n="totalLeads">Total Leads</div>
+            <div class="stat-value" id="st-leads">0</div>
+            <div class="stat-sub" data-i18n="inPipeline">In Pipeline</div>
+            <div class="stat-icon">🎯</div>
+          </div>
+        </div>
+
+        <div class="grid-2 mb-16" style="gap:16px;">
+          <!-- MACHINE MODE -->
+          <div class="machine-mode-card">
+            <div class="card-title">⚡ <span data-i18n="machineMode">Machine Mode — Top Tasks</span></div>
+            <div id="machineTasks">
+              <div style="color:var(--text2);font-size:0.85rem;" data-i18n="noTasks">No tasks assigned yet.</div>
+            </div>
+          </div>
+
+          <!-- DAILY NOTES -->
+          <div class="card">
+            <div class="flex-between mb-16">
+              <div class="card-title">📝 <span data-i18n="dailyNotes">Daily Notes</span></div>
+              <button class="btn btn-primary btn-sm" onclick="addDashNote()" data-i18n="add">Add</button>
+            </div>
+            <div id="dashNotes">
+              <div style="color:var(--text2);font-size:0.85rem;" data-i18n="noNotes">No notes yet.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT CLIENTS -->
+        <div class="card">
+          <div class="card-title">👥 <span data-i18n="recentClients">Recent Clients</span></div>
+          <div id="recentClients">
+            <div style="color:var(--text2);font-size:0.85rem;" data-i18n="noClients">No clients yet. Go to CRM to add.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ CRM PAGE ════════ -->
+      <div class="page" id="page-crm">
+        <div class="section-header">
+          <div class="section-title">👥 <span data-i18n="crm">CRM</span> — <span data-i18n="clientManagement">Client Management</span></div>
+          <div class="d-flex gap-8 flex-wrap">
+            <div class="search-box">
+              <span>🔍</span>
+              <input type="text" id="crmSearch" placeholder="Search clients..." oninput="renderCRM()" data-i18n-placeholder="searchClients">
+            </div>
+            <button class="btn btn-primary" onclick="openClientModal()">+ <span data-i18n="addClient">Add Client</span></button>
+          </div>
+        </div>
+
+        <div class="tabs" id="crmTabs">
+          <button class="tab-btn active" onclick="filterCRM('all',this)" data-i18n="all">All</button>
+          <button class="tab-btn" onclick="filterCRM('Active',this)" data-i18n="active">Active</button>
+          <button class="tab-btn" onclick="filterCRM('Inactive',this)" data-i18n="inactive">Inactive</button>
+          <button class="tab-btn" onclick="filterCRM('Lead',this)" data-i18n="lead">Lead</button>
+        </div>
+
+        <div class="grid-auto" id="crmGrid">
+          <div style="color:var(--text2);grid-column:1/-1;" data-i18n="noClients">No clients yet.</div>
+        </div>
+      </div>
+
+      <!-- ════════ ADS MANAGER PAGE ════════ -->
+      <div class="page" id="page-ads">
+        <div class="section-header">
+          <div class="section-title">📢 <span data-i18n="adsManager">Ads Manager</span></div>
+          <button class="btn btn-primary" onclick="openAdModal()">+ <span data-i18n="addAdSet">Add Ad Set</span></button>
+        </div>
+        <div class="grid-auto" id="adsGrid">
+          <div style="color:var(--text2);grid-column:1/-1;" data-i18n="noAds">No ad sets yet.</div>
+        </div>
+      </div>
+
+      <!-- ════════ MEDIA PLAN PAGE ════════ -->
+      <div class="page" id="page-media">
+        <div class="section-header">
+          <div class="section-title">📅 <span data-i18n="mediaPlan">30-Day Media Plan</span></div>
+          <div class="d-flex gap-8">
+            <div style="font-size:0.88rem;color:var(--text2);" data-i18n="totalBudget">Total Budget:</div>
+            <div style="font-size:0.88rem;font-weight:700;color:var(--accent);" id="mediaTotalBudget">$0</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="mediaTable">
+            <thead>
+              <tr>
+                <th data-i18n="day">Day</th>
+                <th data-i18n="platform">Platform</th>
+                <th data-i18n="budget">Budget ($)</th>
+                <th data-i18n="content">Content</th>
+                <th data-i18n="objective">Objective</th>
+              </tr>
+            </thead>
+            <tbody id="mediaBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════════ TEAM PAGE ════════ -->
+      <div class="page" id="page-team">
+        <div class="section-header">
+          <div class="section-title">🤝 <span data-i18n="team">Team</span></div>
+          <button class="btn btn-primary" onclick="openTeamModal()">+ <span data-i18n="addMember">Add Member</span></button>
+        </div>
+        <div class="grid-3" id="teamGrid">
+          <div style="color:var(--text2);" data-i18n="noTeam">No team members yet.</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="section-header">
+          <div class="section-title">📋 <span data-i18n="tasks">Tasks</span></div>
+          <button class="btn btn-primary" onclick="openTaskModal()">+ <span data-i18n="addTask">Add Task</span></button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="task">Task</th>
+                <th data-i18n="assignedTo">Assigned To</th>
+                <th data-i18n="status">Status</th>
+                <th data-i18n="priority">Priority</th>
+                <th data-i18n="actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tasksBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════════ SALES PAGE ════════ -->
+      <div class="page" id="page-sales">
+        <div class="section-header">
+          <div class="section-title">💰 <span data-i18n="sales">Sales</span> — <span data-i18n="leadPipeline">Lead Pipeline</span></div>
+          <button class="btn btn-primary" onclick="openLeadModal()">+ <span data-i18n="addLead">Add Lead</span></button>
+        </div>
+        <div class="grid-3" id="salesKanban" style="align-items:start;">
+          <!-- Dynamic Kanban -->
+        </div>
+      </div>
+
+      <!-- ════════ CONTENT PAGE ════════ -->
+      <div class="page" id="page-content">
+        <div class="section-header">
+          <div class="section-title">✍️ <span data-i18n="content">Content</span></div>
+          <button class="btn btn-primary" onclick="openContentModal()">+ <span data-i18n="addContent">Add Content</span></button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="title">Title</th>
+                <th data-i18n="type">Type</th>
+                <th data-i18n="platform">Platform</th>
+                <th data-i18n="status">Status</th>
+                <th data-i18n="client">Client</th>
+                <th data-i18n="actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="contentBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ════════ GOALS PAGE ════════ -->
+      <div class="page" id="page-goals">
+        <div class="section-header">
+          <div class="section-title">🎯 <span data-i18n="goals">Goals</span></div>
+          <button class="btn btn-primary" onclick="openGoalModal()">+ <span data-i18n="addGoal">Add Goal</span></button>
+        </div>
+        <div class="grid-3" id="goalsGrid"></div>
+      </div>
+
+      <!-- ════════ PERSONAL PAGE ════════ -->
+      <div class="page" id="page-personal">
+        <div class="section-header">
+          <div class="section-title">🕌 <span data-i18n="personal">Personal Tracker</span></div>
+          <div class="d-flex gap-8">
+            <div style="font-size:0.8rem;color:var(--text2);" id="personalDate"></div>
+            <button class="btn btn-ghost btn-sm" onclick="resetPersonal()" data-i18n="resetDay">Reset Day</button>
+          </div>
+        </div>
+
+        <div class="grid-2" style="gap:16px;">
+          <div class="card">
+            <div class="card-title">🕌 <span data-i18n="prayers">Daily Prayers</span></div>
+            <div id="prayerTracker"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📖 <span data-i18n="quran">Quran Reading</span></div>
+            <div class="tracker-item">
+              <div class="tracker-label" data-i18n="pagesRead">Pages Read</div>
+              <div class="tracker-controls">
+                <button class="tracker-btn" onclick="adjustTracker('quranPages',-1)">−</button>
+                <div class="tracker-count" id="quranPages">0</div>
+                <button class="tracker-btn" onclick="adjustTracker('quranPages',1)">+</button>
+              </div>
+            </div>
+            <div class="tracker-item">
+              <div class="tracker-label" data-i18n="versesMemorized">Verses Memorized</div>
+              <div class="tracker-controls">
+                <button class="tracker-btn" onclick="adjustTracker('verses',-1)">−</button>
+                <div class="tracker-count" id="verses">0</div>
+                <button class="tracker-btn" onclick="adjustTracker('verses',1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">💝 <span data-i18n="charity">Charity & Sadaqah</span></div>
+            <div class="tracker-item">
+              <div class="tracker-label" data-i18n="charityAmount">Amount ($)</div>
+              <div class="tracker-controls">
+                <button class="tracker-btn" onclick="adjustTracker('charityAmt',-1)">−</button>
+                <div class="tracker-count" id="charityAmt">0</div>
+                <button class="tracker-btn" onclick="adjustTracker('charityAmt',1)">+</button>
+              </div>
+            </div>
+            <div class="tracker-item">
+              <div class="tracker-label" data-i18n="charityActs">Good Deeds</div>
+              <div class="tracker-controls">
+                <button class="tracker-btn" onclick="adjustTracker('charityActs',-1)">−</button>
+                <div class="tracker-count" id="charityActs">0</div>
+                <button class="tracker-btn" onclick="adjustTracker('charityActs',1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 <span data-i18n="weeklyProgress">Weekly Progress</span></div>
+            <div id="weeklyProgress"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app -->
+
+<!-- ═══════════════════════════ MODALS ═══════════════════════════ -->
+
+<!-- CLIENT MODAL -->
+<div class="modal-overlay" id="clientModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="clientModalTitle" data-i18n="addClient">Add Client</div>
+      <button class="modal-close" onclick="closeModal('clientModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="name">Name</label><input id="c-name" placeholder="Client Name"></div>
+        <div class="form-group-sm"><label data-i18n="phone">Phone</label><input id="c-phone" placeholder="+20..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="industry">Industry</label><input id="c-industry" placeholder="E-commerce, Real Estate..."></div>
+        <div class="form-group-sm"><label data-i18n="status">Status</label>
+          <select id="c-status">
+            <option>Active</option><option>Inactive</option><option>Lead</option><option>Pending</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="leadScore">Lead Score (1-10)</label><input id="c-score" type="number" min="1" max="10" placeholder="8"></div>
+        <div class="form-group-sm"><label data-i18n="adBudget">Ad Budget ($)</label><input id="c-budget" type="number" placeholder="5000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="revenue">Revenue ($)</label><input id="c-revenue" type="number" placeholder="15000" oninput="autoCalcProfit()"></div>
+        <div class="form-group-sm"><label data-i18n="profit">Profit ($) <span style="font-size:0.7rem;color:var(--accent);">(auto 33%)</span></label><input id="c-profit" type="number" placeholder="4950"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="moneyOutside">Money Outside ($)</label><input id="c-outside" type="number" placeholder="0"></div>
+        <div class="form-group-sm"><label data-i18n="email">Email</label><input id="c-email" placeholder="client@email.com"></div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="notes">Notes</label><textarea id="c-notes" placeholder="Client notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('clientModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClient()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT DETAIL MODAL -->
+<div class="modal-overlay" id="clientDetailModal">
+  <div class="modal-box" style="max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title" id="cdName">Client Profile</div>
+      <button class="modal-close" onclick="closeModal('clientDetailModal')">×</button>
+    </div>
+    <div class="modal-body" id="clientDetailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="deleteClientFromDetail()" data-i18n="delete">Delete</button>
+      <button class="btn btn-ghost" onclick="closeModal('clientDetailModal')" data-i18n="close">Close</button>
+      <button class="btn btn-primary" onclick="editClientFromDetail()" data-i18n="edit">Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- AD MODAL -->
+<div class="modal-overlay" id="adModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="adModalTitle" data-i18n="addAdSet">Add Ad Set</div>
+      <button class="modal-close" onclick="closeModal('adModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="adSetName">Ad Set Name</label><input id="ad-name" placeholder="Summer Campaign..."></div>
+        <div class="form-group-sm"><label data-i18n="client">Client</label><input id="ad-client" placeholder="Client name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="platform">Platform</label>
+          <select id="ad-platform">
+            <option>Facebook</option><option>Instagram</option><option>TikTok</option><option>Google</option><option>YouTube</option><option>Snapchat</option>
+          </select>
+        </div>
+        <div class="form-group-sm"><label data-i18n="budget">Budget ($)</label><input id="ad-budget" type="number" placeholder="2000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="videos">Videos Count</label><input id="ad-videos" type="number" placeholder="5"></div>
+        <div class="form-group-sm"><label data-i18n="designs">Designs Count</label><input id="ad-designs" type="number" placeholder="10"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="status">Status</label>
+          <select id="ad-status">
+            <option>Running</option><option>Paused</option><option>Draft</option><option>Completed</option>
+          </select>
+        </div>
+        <div class="form-group-sm"><label data-i18n="isWinner">Mark as Winner?</label>
+          <select id="ad-winner">
+            <option value="0">No</option><option value="1">Yes ⭐</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="notes">Notes</label><textarea id="ad-notes" placeholder="Ad set notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('adModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAd()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEAM MODAL -->
+<div class="modal-overlay" id="teamModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="addMember">Add Team Member</div>
+      <button class="modal-close" onclick="closeModal('teamModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="name">Name</label><input id="tm-name" placeholder="Member name"></div>
+        <div class="form-group-sm"><label data-i18n="role">Role</label><input id="tm-role" placeholder="Designer, Developer..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="email">Email</label><input id="tm-email" placeholder="email@example.com"></div>
+        <div class="form-group-sm"><label data-i18n="phone">Phone</label><input id="tm-phone" placeholder="+20..."></div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="status">Status</label>
+          <select id="tm-status"><option>Active</option><option>Busy</option><option>On Leave</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('teamModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTeamMember()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="addTask">Add Task</div>
+      <button class="modal-close" onclick="closeModal('taskModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="task">Task</label><input id="tk-task" placeholder="Task description..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="assignedTo">Assigned To</label>
+          <select id="tk-assign"></select>
+        </div>
+        <div class="form-group-sm"><label data-i18n="priority">Priority</label>
+          <select id="tk-priority"><option>High</option><option>Medium</option><option>Low</option></select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="status">Status</label>
+          <select id="tk-status"><option>To Do</option><option>In Progress</option><option>Done</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('taskModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTask()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD MODAL -->
+<div class="modal-overlay" id="leadModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="addLead">Add Lead</div>
+      <button class="modal-close" onclick="closeModal('leadModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="name">Name</label><input id="ld-name" placeholder="Lead name"></div>
+        <div class="form-group-sm"><label data-i18n="phone">Phone</label><input id="ld-phone" placeholder="+20..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="source">Source</label>
+          <select id="ld-source"><option>Facebook</option><option>Instagram</option><option>Referral</option><option>Website</option><option>Cold Call</option><option>Other</option></select>
+        </div>
+        <div class="form-group-sm"><label data-i18n="status">Status</label>
+          <select id="ld-status"><option>New</option><option>Contacted</option><option>Qualified</option><option>Proposal</option><option>Closed Won</option><option>Closed Lost</option></select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="notes">Notes</label><textarea id="ld-notes" placeholder="Lead notes..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('leadModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLead()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT MODAL -->
+<div class="modal-overlay" id="contentModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="addContent">Add Content</div>
+      <button class="modal-close" onclick="closeModal('contentModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="title">Title</label><input id="ct-title" placeholder="Content title..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="type">Type</label>
+          <select id="ct-type"><option>Video</option><option>Image</option><option>Story</option><option>Reel</option><option>Blog</option><option>Caption</option></select>
+        </div>
+        <div class="form-group-sm"><label data-i18n="platform">Platform</label>
+          <select id="ct-platform"><option>Facebook</option><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>Website</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="status">Status</label>
+          <select id="ct-status"><option>Idea</option><option>In Progress</option><option>Review</option><option>Published</option></select>
+        </div>
+        <div class="form-group-sm"><label data-i18n="client">Client</label><input id="ct-client" placeholder="Client name"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('contentModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveContent()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="addGoal">Add / Edit Goal</div>
+      <button class="modal-close" onclick="closeModal('goalModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row single">
+        <div class="form-group-sm"><label data-i18n="goalTitle">Goal Title</label><input id="gl-title" placeholder="Egypt Clients..."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="current">Current</label><input id="gl-current" type="number" placeholder="0"></div>
+        <div class="form-group-sm"><label data-i18n="target">Target</label><input id="gl-target" type="number" placeholder="10"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group-sm"><label data-i18n="category">Category</label>
+          <select id="gl-cat"><option>Clients</option><option>Revenue</option><option>Leads</option><option>Other</option></select>
+        </div>
+        <div class="form-group-sm"><label data-i18n="emoji">Icon</label><input id="gl-emoji" placeholder="🇪🇬" maxlength="4"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('goalModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGoal()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="addNote">Add Note</div>
+      <button class="modal-close" onclick="closeModal('noteModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group-sm"><label data-i18n="note">Note</label><textarea id="nt-text" placeholder="Write your note..." style="min-height:100px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('noteModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDashNote()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PENDING MODAL -->
+<div class="modal-overlay" id="pendingModal">
+  <div class="modal-box" style="max-width:360px;">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="editPending">Edit Pending Money</div>
+      <button class="modal-close" onclick="closeModal('pendingModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group-sm"><label data-i18n="pendingMoney">Pending Money ($)</label><input id="pm-val" type="number" placeholder="28000"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('pendingModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="savePending()" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box" style="max-width:360px;">
+    <div class="modal-header">
+      <div class="modal-title" data-i18n="confirm">Confirm Action</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:0.95rem;color:var(--text);" id="confirmMsg">Are you sure?</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')" data-i18n="cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn" data-i18n="confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  ZEQUOZ SYSTEM — CORE JS
+// ══════════════════════════════════════════════════════════════════
+
+// ─── STATE ───
+let DB = {
+  clients:[],
+  ads:[],
+  media:[],
+  team:[],
+  tasks:[],
+  leads:[],
+  content:[],
+  goals:[],
+  notes:[],
+  personal:{prayers:{fajr:0,duhr:0,asr:0,maghrib:0,isha:0},quranPages:0,verses:0,charityAmt:0,charityActs:0,lastReset:''},
+  settings:{pending:28000,theme:'dark',lang:'en'},
+  session:{loggedIn:false}
+};
+let currentLang='en';
+let editingId=null;
+let currentClientId=null;
+let crmFilter='all';
+
+// ─── TRANSLATIONS ───
+const T={
+  en:{
+    system:'SYSTEM',dashboard:'Dashboard',crm:'CRM',ads:'Ads Manager',media:'Media Plan',
+    team:'Team',sales:'Sales',content:'Content',goals:'Goals',personal:'Personal',
+    loggedAs:'Logged in as',logout:'Logout',dark:'Dark',light:'Light',
+    totalClients:'Total Clients',activeClients:'Active Clients',totalRevenue:'Total Revenue',
+    totalProfit:'Total Profit',pendingMoney:'Pending Money',moneyOutside:'Money Outside',
+    teamMembers:'Team Members',totalLeads:'Total Leads',registered:'Registered',
+    currentlyActive:'Currently Active',allClients:'All Clients',est33:'Est. 33%',
+    clickEdit:'Click to edit',fromClients:'From Clients',active:'Active',inPipeline:'In Pipeline',
+    machineMode:'Machine Mode — Top Tasks',dailyNotes:'Daily Notes',add:'Add',
+    noTasks:'No tasks assigned yet.',noNotes:'No notes yet.',noClients:'No clients yet.',
+    recentClients:'Recent Clients',clientManagement:'Client Management',
+    searchClients:'Search clients...',addClient:'Add Client',all:'All',
+    inactive:'Inactive',lead:'Lead',name:'Name',phone:'Phone',industry:'Industry',
+    status:'Status',leadScore:'Lead Score (1-10)',adBudget:'Ad Budget ($)',
+    revenue:'Revenue ($)',profit:'Profit ($)',moneyOutsideF:'Money Outside ($)',
+    email:'Email',notes:'Notes',cancel:'Cancel',save:'Save',edit:'Edit',delete:'Delete',
+    close:'Close',addAdSet:'Add Ad Set',adSetName:'Ad Set Name',client:'Client',
+    platform:'Platform',budget:'Budget ($)',videos:'Videos Count',designs:'Designs Count',
+    isWinner:'Mark as Winner?',noAds:'No ad sets yet.',day:'Day',content:'Content',
+    objective:'Objective',totalBudget:'Total Budget:',addMember:'Add Member',
+    role:'Role',noTeam:'No team members yet.',tasks:'Tasks',addTask:'Add Task',
+    task:'Task',assignedTo:'Assigned To',priority:'Priority',actions:'Actions',
+    leadPipeline:'Lead Pipeline',addLead:'Add Lead',source:'Source',addContent:'Add Content',
+    title:'Title',type:'Type',addGoal:'Add Goal',goalTitle:'Goal Title',current:'Current',
+    target:'Target',category:'Category',emoji:'Icon',prayers:'Daily Prayers',
+    quran:'Quran Reading',pagesRead:'Pages Read',versesMemorized:'Verses Memorized',
+    charity:'Charity & Sadaqah',charityAmount:'Amount ($)',charityActs:'Good Deeds',
+    weeklyProgress:'Weekly Progress',resetDay:'Reset Day',addNote:'Add Note',note:'Note',
+    editPending:'Edit Pending Money',confirm:'Confirm',confirmDel:'Are you sure you want to delete this item?',
+    winner:'Winner',running:'Running',paused:'Paused',draft:'Draft',completed:'Completed',
+    fajr:'Fajr',duhr:'Dhuhr',asr:'Asr',maghrib:'Maghrib',isha:'Isha',
+    donePrayer:'Done',pendingPrayer:'Pending',loginWelcome:'Welcome back! Please sign in.',
+    username:'Username',password:'Password',signin:'Sign In',
+    noContent:'No content yet.',noLeads:'No leads yet.'
+  },
+  ar:{
+    system:'النظام',dashboard:'لوحة التحكم',crm:'إدارة العملاء',ads:'مدير الإعلانات',
+    media:'خطة الميديا',team:'الفريق',sales:'المبيعات',content:'المحتوى',
+    goals:'الأهداف',personal:'الشخصي',loggedAs:'تسجيل الدخول كـ',logout:'تسجيل الخروج',
+    dark:'داكن',light:'فاتح',totalClients:'إجمالي العملاء',activeClients:'العملاء النشطون',
+    totalRevenue:'إجمالي الإيرادات',totalProfit:'إجمالي الأرباح',pendingMoney:'المبالغ المعلقة',
+    moneyOutside:'الأموال الخارجية',teamMembers:'أعضاء الفريق',totalLeads:'إجمالي العملاء المحتملين',
+    registered:'مسجّل',currentlyActive:'نشط حالياً',allClients:'جميع العملاء',
+    est33:'تقدير 33٪',clickEdit:'انقر للتعديل',fromClients:'من العملاء',
+    active:'نشط',inPipeline:'في المسار',machineMode:'وضع الآلة — أهم المهام',
+    dailyNotes:'ملاحظات يومية',add:'إضافة',noTasks:'لا توجد مهام بعد.',
+    noNotes:'لا توجد ملاحظات بعد.',noClients:'لا يوجد عملاء بعد.',
+    recentClients:'أحدث العملاء',clientManagement:'إدارة العملاء',
+    searchClients:'ابحث عن عميل...',addClient:'إضافة عميل',all:'الكل',
+    inactive:'غير نشط',lead:'عميل محتمل',name:'الاسم',phone:'الهاتف',
+    industry:'القطاع',status:'الحالة',leadScore:'درجة العميل (1-10)',
+    adBudget:'ميزانية الإعلانات ($)',revenue:'الإيرادات ($)',profit:'الأرباح ($)',
+    moneyOutsideF:'الأموال الخارجية ($)',email:'البريد الإلكتروني',notes:'ملاحظات',
+    cancel:'إلغاء',save:'حفظ',edit:'تعديل',delete:'حذف',close:'إغلاق',
+    addAdSet:'إضافة مجموعة إعلانات',adSetName:'اسم المجموعة',client:'العميل',
+    platform:'المنصة',budget:'الميزانية ($)',videos:'عدد الفيديوهات',
+    designs:'عدد التصاميم',isWinner:'تحديد كفائز؟',noAds:'لا توجد مجموعات إعلانية بعد.',
+    day:'اليوم',content:'المحتوى',objective:'الهدف',totalBudget:'إجمالي الميزانية:',
+    addMember:'إضافة عضو',role:'الدور',noTeam:'لا يوجد أعضاء في الفريق بعد.',
+    tasks:'المهام',addTask:'إضافة مهمة',task:'المهمة',assignedTo:'مُسند إلى',
+    priority:'الأولوية',actions:'الإجراءات',leadPipeline:'مسار المبيعات',
+    addLead:'إضافة عميل محتمل',source:'المصدر',addContent:'إضافة محتوى',
+    title:'العنوان',type:'النوع',addGoal:'إضافة هدف',goalTitle:'عنوان الهدف',
+    current:'الحالي',target:'الهدف',category:'الفئة',emoji:'أيقونة',
+    prayers:'الصلوات اليومية',quran:'قراءة القرآن',pagesRead:'الصفحات المقروءة',
+    versesMemorized:'الآيات المحفوظة',charity:'الصدقة والخير',charityAmount:'المبلغ ($)',
+    charityActs:'الأعمال الخيرية',weeklyProgress:'التقدم الأسبوعي',resetDay:'إعادة تعيين اليوم',
+    addNote:'إضافة ملاحظة',note:'ملاحظة',editPending:'تعديل المبالغ المعلقة',
+    confirm:'تأكيد',confirmDel:'هل أنت متأكد من حذف هذا العنصر؟',
+    winner:'فائز',running:'يعمل',paused:'متوقف',draft:'مسودة',completed:'مكتمل',
+    fajr:'الفجر',duhr:'الظهر',asr:'العصر',maghrib:'المغرب',isha:'العشاء',
+    donePrayer:'مكتملة',pendingPrayer:'معلقة',loginWelcome:'أهلاً! سجّل دخولك.',
+    username:'اسم المستخدم',password:'كلمة المرور',signin:'تسجيل الدخول',
+    noContent:'لا يوجد محتوى بعد.',noLeads:'لا يوجد عملاء محتملون بعد.'
+  }
+};
+
+function t(key){return (T[currentLang]&&T[currentLang][key])||T.en[key]||key;}
+
+// ════════════════════════════════════════════════════════
+//  GITHUB SYNC — ضع بياناتك هنا
+// ════════════════════════════════════════════════════════
+const GH = {
+  owner : 'YOUR_GITHUB_USERNAME',   // ← اسم حسابك على GitHub
+  repo  : 'YOUR_REPO_NAME',         // ← اسم المستودع
+  file  : 'db.json',                // ← اسم ملف البيانات (لا تغيّره)
+  token : 'YOUR_PERSONAL_ACCESS_TOKEN', // ← الـ Token بصلاحية repo
+};
+let _ghSHA = null;   // يُملأ تلقائياً
+let _ghSyncing = false;
+
+function _ghURL(){
+  return `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.file}`;
+}
+function _ghHeaders(){
+  return {'Authorization':'token '+GH.token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'};
+}
+
+// ─── حفظ محلي + رفع على GitHub ───
+function saveDB(){
+  localStorage.setItem('zequoz_db',JSON.stringify(DB));
+  _pushToGitHub();
+}
+
+async function _pushToGitHub(){
+  if(!GH.token||GH.token==='YOUR_PERSONAL_ACCESS_TOKEN')return;
+  if(_ghSyncing)return;
+  _ghSyncing=true;
+  _setSyncBadge('syncing');
+  try{
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(DB,null,2))));
+    const body={
+      message:`update by ${DB.settings?.currentUser||'user'} — ${new Date().toLocaleString()}`,
+      content,
+      committer:{name:'ZeQuoz System',email:'zequoz@system.local'}
+    };
+    if(_ghSHA)body.sha=_ghSHA;
+    const res=await fetch(_ghURL(),{method:'PUT',headers:_ghHeaders(),body:JSON.stringify(body)});
+    if(!res.ok)throw new Error('Push failed: '+res.status);
+    const data=await res.json();
+    _ghSHA=data.content.sha;
+    _setSyncBadge('ok');
+  }catch(e){
+    console.warn('GitHub push failed:',e);
+    _setSyncBadge('err');
+  }finally{_ghSyncing=false;}
+}
+
+async function _pullFromGitHub(){
+  if(!GH.token||GH.token==='YOUR_PERSONAL_ACCESS_TOKEN')return false;
+  _setSyncBadge('syncing');
+  try{
+    const res=await fetch(_ghURL(),{headers:_ghHeaders()});
+    if(res.status===404){_setSyncBadge('ok');return false;} // ملف جديد
+    if(!res.ok)throw new Error('Pull failed: '+res.status);
+    const data=await res.json();
+    _ghSHA=data.sha;
+    const decoded=JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
+    DB=Object.assign({},DB,decoded);
+    localStorage.setItem('zequoz_db',JSON.stringify(DB));
+    _setSyncBadge('ok');
+    return true;
+  }catch(e){
+    console.warn('GitHub pull failed:',e);
+    _setSyncBadge('err');
+    return false;
+  }
+}
+
+function _setSyncBadge(state){
+  const el=document.getElementById('ghSyncBadge');
+  if(!el)return;
+  const map={
+    ok:    {text:'☁️ Synced',    cls:'badge-success'},
+    err:   {text:'⚠️ Sync Error', cls:'badge-warning'},
+    syncing:{text:'🔄 Syncing…', cls:'badge-info'}
+  };
+  const s=map[state]||map.ok;
+  el.textContent=s.text;
+  el.className='badge '+s.cls;
+}
+
+async function manualPull(){
+  const pulled=await _pullFromGitHub();
+  if(pulled){renderAll();toast('✅ Data refreshed from GitHub!');}
+  else{toast('⚠️ Could not pull from GitHub','warning');}
+}
+
+// ─── AUTO REFRESH كل 15 ثانية في الخلفية بصمت ───
+let _lastSHA=null;
+async function _autoRefresh(){
+  if(!GH.token||GH.token==='YOUR_PERSONAL_ACCESS_TOKEN')return;
+  try{
+    const res=await fetch(_ghURL(),{headers:_ghHeaders()});
+    if(!res.ok)return;
+    const data=await res.json();
+    // لو في تغيير جديد من حد تاني
+    if(_lastSHA&&data.sha!==_lastSHA&&data.sha!==_ghSHA){
+      _ghSHA=data.sha;
+      _lastSHA=data.sha;
+      const decoded=JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
+      DB=Object.assign({},DB,decoded);
+      localStorage.setItem('zequoz_db',JSON.stringify(DB));
+      renderAll();
+      // إشعار خفيف
+      const badge=document.getElementById('ghSyncBadge');
+      if(badge){badge.textContent='🔔 Updated!';setTimeout(()=>_setSyncBadge('ok'),2500);}
+    }else{
+      _lastSHA=data.sha;
+    }
+  }catch(e){/* صمت */}
+}
+function _startAutoRefresh(){
+  setInterval(_autoRefresh,15000);
+}
+
+// ─── LOCALSTORAGE ───
+function loadDB(){
+  const raw=localStorage.getItem('zequoz_db');
+  if(raw){
+    try{
+      const loaded=JSON.parse(raw);
+      DB=Object.assign({},DB,loaded);
+      if(!DB.personal)DB.personal={prayers:{fajr:0,duhr:0,asr:0,maghrib:0,isha:0},quranPages:0,verses:0,charityAmt:0,charityActs:0,lastReset:''};
+      if(!DB.settings)DB.settings={pending:28000,theme:'dark',lang:'en'};
+    }catch(e){console.error(e);}
+  }
+  // Default goals
+  if(!DB.goals||DB.goals.length===0){
+    DB.goals=[
+      {id:uid(),title:'Egypt Clients',emoji:'🇪🇬',current:0,target:10,category:'Clients'},
+      {id:uid(),title:'Saudi Clients',emoji:'🇸🇦',current:0,target:5,category:'Clients'},
+      {id:uid(),title:'Revenue Goal',emoji:'💵',current:0,target:200000,category:'Revenue'}
+    ];
+  }
+  // Default media plan
+  if(!DB.media||DB.media.length===0){
+    DB.media=[];
+    for(let i=1;i<=30;i++){
+      DB.media.push({day:i,platform:'Facebook',budget:0,content:'',objective:''});
+    }
+  }
+}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+
+// ─── INIT ───
+window.addEventListener('load',async ()=>{
+  loadDB();
+  currentLang=DB.settings.lang||'en';
+  // Try to pull fresh data from GitHub during loading screen
+  await _pullFromGitHub();
+  currentLang=DB.settings.lang||'en';
+  setTimeout(()=>{
+    document.getElementById('loadingScreen').classList.add('hide');
+    setTimeout(()=>{
+      document.getElementById('loadingScreen').style.display='none';
+      if(DB.session.loggedIn){
+        showApp();
+      } else {
+        showLogin();
+      }
+    },600);
+  },2200);
+});
+
+function showLogin(){
+  const ls=document.getElementById('loginScreen');
+  ls.style.display='flex';
+  applyTheme(DB.settings.theme);
+  applyLoginLang();
+}
+
+function showApp(){
+  document.getElementById('loginScreen').style.display='none';
+  const app=document.getElementById('app');
+  app.style.display='flex';
+  app.classList.add('show');
+  applyTheme(DB.settings.theme);
+  applyLang(currentLang);
+  renderAll();
+  setDashDate();
+  _startAutoRefresh();
+}
+
+// ─── THEME ───
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  DB.settings.theme=theme;
+  const btn=document.getElementById('themeBtn');
+  if(btn){
+    const span=btn.querySelector('span');
+    if(theme==='dark'){btn.innerHTML='🌙 <span data-i18n="dark">'+t('dark')+'</span>';}
+    else{btn.innerHTML='☀️ <span data-i18n="light">'+t('light')+'</span>';}
+  }
+  saveDB();
+}
+function toggleTheme(){
+  const cur=DB.settings.theme==='dark'?'light':'dark';
+  applyTheme(cur);
+}
+
+// ─── LANGUAGE ───
+function applyLang(lang){
+  currentLang=lang;
+  DB.settings.lang=lang;
+  document.documentElement.setAttribute('lang',lang);
+  document.documentElement.setAttribute('dir',lang==='ar'?'rtl':'ltr');
+  // Translate all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    el.textContent=t(key);
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    el.setAttribute('placeholder',t(el.getAttribute('data-i18n-placeholder')));
+  });
+  const ll=document.getElementById('langLabel');
+  if(ll)ll.textContent=lang==='en'?'العربية':'English';
+  saveDB();
+  renderAll();
+}
+function toggleLang(){
+  applyLang(currentLang==='en'?'ar':'en');
+}
+
+// ─── LOGIN LANG ───
+function applyLoginLang(){
+  document.documentElement.setAttribute('lang',currentLang);
+  document.documentElement.setAttribute('dir',currentLang==='ar'?'rtl':'ltr');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    el.textContent=t(key);
+  });
+  const sub=document.getElementById('loginSubText');
+  if(sub)sub.textContent=t('loginWelcome');
+  const lblE=document.getElementById('lblEmail');
+  if(lblE)lblE.textContent=t('username');
+  const lblP=document.getElementById('lblPass');
+  if(lblP)lblP.textContent=t('password');
+  const btn=document.getElementById('loginBtn');
+  if(btn)btn.textContent=t('signin');
+  const langBtn=document.getElementById('langBtnLogin');
+  if(langBtn)langBtn.textContent='🌍 '+(currentLang==='en'?'عربي':'English');
+}
+function toggleLangLogin(){
+  currentLang=currentLang==='en'?'ar':'en';
+  DB.settings.lang=currentLang;
+  saveDB();
+  applyLoginLang();
+}
+
+// ─── LOGIN / LOGOUT ───
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value.trim();
+  const err=document.getElementById('loginError');
+  if(email==='admin'&&pass==='admin'){
+    err.style.display='none';
+    DB.session.loggedIn=true;
+    saveDB();
+    document.getElementById('loginScreen').classList.add('hide');
+    setTimeout(()=>{
+      document.getElementById('loginScreen').style.display='none';
+      showApp();
+    },500);
+  } else {
+    err.style.display='block';
+    err.textContent=currentLang==='ar'?'بيانات خاطئة. جرّب admin / admin':'Invalid credentials. Try admin / admin';
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('loginScreen')&&document.getElementById('loginScreen').style.display!=='none'){
+    doLogin();
+  }
+});
+function doLogout(){
+  DB.session.loggedIn=false;
+  saveDB();
+  document.getElementById('app').style.display='none';
+  showLogin();
+}
+
+// ─── SIDEBAR ───
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ─── NAVIGATION ───
+const pageTitles={
+  dashboard:'dashboard',crm:'crm',ads:'adsManager',media:'mediaPlan',
+  team:'team',sales:'sales',content:'content',goals:'goals',personal:'personal'
+};
+function navTo(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg=document.getElementById('page-'+page);
+  if(pg)pg.classList.add('active');
+  if(el)el.classList.add('active');
+  const ptEl=document.getElementById('pageTitle');
+  if(ptEl){ptEl.setAttribute('data-i18n',pageTitles[page]||page);ptEl.textContent=t(pageTitles[page]||page);}
+  closeSidebar();
+  renderPage(page);
+}
+function renderPage(page){
+  if(page==='dashboard')renderDashboard();
+  else if(page==='crm')renderCRM();
+  else if(page==='ads')renderAds();
+  else if(page==='media')renderMedia();
+  else if(page==='team')renderTeam();
+  else if(page==='sales')renderSales();
+  else if(page==='content')renderContent();
+  else if(page==='goals')renderGoals();
+  else if(page==='personal')renderPersonal();
+}
+
+function renderAll(){
+  renderDashboard();
+  renderCRM();
+  renderAds();
+  renderMedia();
+  renderTeam();
+  renderSales();
+  renderContent();
+  renderGoals();
+  renderPersonal();
+  applyLangToNav();
+}
+function applyLangToNav(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent=t(el.getAttribute('data-i18n'));
+  });
+}
+
+// ─── DATE ───
+function setDashDate(){
+  const now=new Date();
+  const opts={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  const dd=document.getElementById('dashDate');
+  if(dd)dd.textContent=now.toLocaleDateString(currentLang==='ar'?'ar-EG':'en-US',opts);
+  const pd=document.getElementById('personalDate');
+  if(pd)pd.textContent=now.toLocaleDateString(currentLang==='ar'?'ar-EG':'en-US',opts);
+}
+
+// ─── MODAL HELPERS ───
+function openModal(id){
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow='';
+  editingId=null;
+}
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal-overlay')){
+    closeModal(e.target.id);
+  }
+});
+
+// ─── TOAST ───
+function toast(msg,type='success'){
+  const tc=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className='toast '+(type);
+  const icon=type==='success'?'✅':type==='error'?'❌':'⚠️';
+  t.innerHTML=icon+' '+msg;
+  tc.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(30px)';setTimeout(()=>t.remove(),300);},3000);
+}
+
+// ─── CONFIRM ───
+function showConfirm(msg,cb){
+  document.getElementById('confirmMsg').textContent=msg;
+  const btn=document.getElementById('confirmOkBtn');
+  btn.onclick=()=>{closeModal('confirmModal');cb();};
+  openModal('confirmModal');
+}
+
+// ─── CONFETTI ───
+function celebrate(){
+  const colors=['#FFD700','#FFA500','#ff4444','#22c55e','#3b82f6','#a855f7'];
+  for(let i=0;i<60;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div');
+      c.className='confetti-piece';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.animationDuration=(2+Math.random()*2)+'s';
+      c.style.animationDelay=(Math.random()*0.5)+'s';
+      c.style.borderRadius=Math.random()>0.5?'50%':'2px';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),4000);
+    },i*30);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  DASHBOARD
+// ════════════════════════════════════════════════════════
+function renderDashboard(){
+  setDashDate();
+  // Stats
+  const totalClients=DB.clients.length;
+  const activeClients=DB.clients.filter(c=>c.status==='Active').length;
+  const totalRevenue=DB.clients.reduce((s,c)=>s+(parseFloat(c.revenue)||0),0);
+  const totalProfit=DB.clients.reduce((s,c)=>s+(parseFloat(c.profit)||0),0);
+  const moneyOut=DB.clients.reduce((s,c)=>s+(parseFloat(c.outside)||0),0);
+  const teamCount=DB.team.length;
+  const leadsCount=DB.leads.length;
+
+  setText('st-clients',totalClients);
+  setText('st-active',activeClients);
+  setText('st-revenue','$'+numFmt(totalRevenue));
+  setText('st-profit','$'+numFmt(totalProfit));
+  setText('st-pending','$'+numFmt(DB.settings.pending));
+  setText('st-outside','$'+numFmt(moneyOut));
+  setText('st-team',teamCount);
+  setText('st-leads',leadsCount);
+
+  // Machine mode — top 3 tasks
+  const topTasks=DB.tasks.filter(tk=>tk.status!=='Done').slice(0,3);
+  const mt=document.getElementById('machineTasks');
+  if(mt){
+    if(topTasks.length===0){mt.innerHTML='<div style="color:var(--text2);font-size:0.85rem;">'+t('noTasks')+'</div>';return;}
+    mt.innerHTML=topTasks.map((tk,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">${i+1}</div>
+        <div style="flex:1;">
+          <div style="font-size:0.88rem;font-weight:600;">${esc(tk.task)}</div>
+          <div style="font-size:0.75rem;color:var(--text2);">${esc(tk.assignedTo)} · ${priorityBadge(tk.priority)}</div>
+        </div>
+        <div>${statusBadge(tk.status)}</div>
+      </div>
+    `).join('');
+  }
+
+  // Daily notes
+  renderDashNotes();
+
+  // Recent clients
+  const rc=document.getElementById('recentClients');
+  if(rc){
+    const recent=DB.clients.slice(-5).reverse();
+    if(recent.length===0){rc.innerHTML='<div style="color:var(--text2);font-size:0.85rem;">'+t('noClients')+'</div>';return;}
+    rc.innerHTML=`<div style="overflow-x:auto;"><table style="width:100%;">
+      <thead><tr>
+        <th>${t('name')}</th><th>${t('industry')}</th><th>${t('status')}</th>
+        <th>${t('revenue')}</th><th>${t('profit')}</th>
+      </tr></thead>
+      <tbody>${recent.map(c=>`
+        <tr onclick="openClientDetail('${c.id}')" style="cursor:pointer;">
+          <td><b>${esc(c.name)}</b></td>
+          <td>${esc(c.industry)}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td style="color:var(--accent);">$${numFmt(c.revenue||0)}</td>
+          <td style="color:var(--success);">$${numFmt(c.profit||0)}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table></div>`;
+  }
+}
+
+function renderDashNotes(){
+  const dn=document.getElementById('dashNotes');
+  if(!dn)return;
+  if(DB.notes.length===0){dn.innerHTML='<div style="color:var(--text2);font-size:0.85rem;">'+t('noNotes')+'</div>';return;}
+  dn.innerHTML=DB.notes.slice(-5).reverse().map(n=>`
+    <div class="note-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="note-date">${n.date}</div>
+        <button class="btn btn-icon btn-ghost btn-sm" style="color:var(--danger);" onclick="deleteNote('${n.id}')">✕</button>
+      </div>
+      <div class="note-text">${esc(n.text)}</div>
+    </div>
+  `).join('');
+}
+
+function addDashNote(){openModal('noteModal');}
+function saveDashNote(){
+  const text=document.getElementById('nt-text').value.trim();
+  if(!text)return;
+  DB.notes.push({id:uid(),text,date:new Date().toLocaleDateString()});
+  saveDB();
+  document.getElementById('nt-text').value='';
+  closeModal('noteModal');
+  renderDashNotes();
+  toast(currentLang==='ar'?'تم إضافة الملاحظة':'Note added!');
+}
+function deleteNote(id){
+  showConfirm(t('confirmDel'),()=>{
+    DB.notes=DB.notes.filter(n=>n.id!==id);
+    saveDB();renderDashboard();
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+function editPending(){
+  document.getElementById('pm-val').value=DB.settings.pending;
+  openModal('pendingModal');
+}
+function savePending(){
+  const v=parseFloat(document.getElementById('pm-val').value)||0;
+  DB.settings.pending=v;
+  saveDB();
+  closeModal('pendingModal');
+  renderDashboard();
+  toast(currentLang==='ar'?'تم التحديث':'Updated!');
+}
+
+// ════════════════════════════════════════════════════════
+//  CRM
+// ════════════════════════════════════════════════════════
+function filterCRM(f,el){
+  crmFilter=f;
+  document.querySelectorAll('#crmTabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderCRM();
+}
+
+function renderCRM(){
+  const search=(document.getElementById('crmSearch')||{value:''}).value.toLowerCase();
+  let clients=DB.clients.filter(c=>{
+    const matchFilter=crmFilter==='all'||c.status===crmFilter;
+    const matchSearch=!search||c.name.toLowerCase().includes(search)||c.industry.toLowerCase().includes(search)||c.phone.includes(search);
+    return matchFilter&&matchSearch;
+  });
+  const grid=document.getElementById('crmGrid');
+  if(!grid)return;
+  if(clients.length===0){grid.innerHTML='<div style="color:var(--text2);grid-column:1/-1;">'+t('noClients')+'</div>';return;}
+  grid.innerHTML=clients.map(c=>`
+    <div class="client-card" onclick="openClientDetail('${c.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div class="client-name">${esc(c.name)}</div>
+          <div style="font-size:0.78rem;color:var(--text2);">${esc(c.industry)}</div>
+        </div>
+        ${statusBadge(c.status)}
+      </div>
+      <div class="client-info">
+        <span>📞 ${esc(c.phone)}</span>
+        <span>⭐ ${c.score||0}/10</span>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;">
+        <div>
+          <div style="color:var(--text2);">${t('revenue')}</div>
+          <div style="color:var(--accent);font-weight:700;">$${numFmt(c.revenue||0)}</div>
+        </div>
+        <div>
+          <div style="color:var(--text2);">${t('profit')}</div>
+          <div style="color:var(--success);font-weight:700;">$${numFmt(c.profit||0)}</div>
+        </div>
+        <div>
+          <div style="color:var(--text2);">${t('moneyOutside')}</div>
+          <div style="color:var(--danger);font-weight:700;">$${numFmt(c.outside||0)}</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:6px;justify-content:flex-end;">
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editClient('${c.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteClient('${c.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openClientModal(id){
+  editingId=id||null;
+  const modal=document.getElementById('clientModal');
+  const title=document.getElementById('clientModalTitle');
+  if(id){
+    const c=DB.clients.find(x=>x.id===id);
+    if(!c)return;
+    title.textContent=t('edit')+' — '+c.name;
+    document.getElementById('c-name').value=c.name||'';
+    document.getElementById('c-phone').value=c.phone||'';
+    document.getElementById('c-industry').value=c.industry||'';
+    document.getElementById('c-status').value=c.status||'Active';
+    document.getElementById('c-score').value=c.score||'';
+    document.getElementById('c-budget').value=c.budget||'';
+    document.getElementById('c-revenue').value=c.revenue||'';
+    document.getElementById('c-profit').value=c.profit||'';
+    document.getElementById('c-outside').value=c.outside||'';
+    document.getElementById('c-email').value=c.email||'';
+    document.getElementById('c-notes').value=c.notes||'';
+  } else {
+    title.textContent=t('addClient');
+    ['c-name','c-phone','c-industry','c-score','c-budget','c-revenue','c-profit','c-outside','c-email','c-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('c-status').value='Active';
+  }
+  openModal('clientModal');
+}
+
+function autoCalcProfit(){
+  const rev=parseFloat(document.getElementById('c-revenue').value)||0;
+  document.getElementById('c-profit').value=Math.round(rev*0.33);
+}
+
+function saveClient(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){toast(currentLang==='ar'?'الاسم مطلوب':'Name is required!','error');return;}
+  const revenue=parseFloat(document.getElementById('c-revenue').value)||0;
+  const profit=parseFloat(document.getElementById('c-profit').value)||Math.round(revenue*0.33);
+  const obj={
+    id:editingId||uid(),
+    name,
+    phone:document.getElementById('c-phone').value.trim(),
+    industry:document.getElementById('c-industry').value.trim(),
+    status:document.getElementById('c-status').value,
+    score:document.getElementById('c-score').value,
+    budget:parseFloat(document.getElementById('c-budget').value)||0,
+    revenue,profit,
+    outside:parseFloat(document.getElementById('c-outside').value)||0,
+    email:document.getElementById('c-email').value.trim(),
+    notes:document.getElementById('c-notes').value.trim(),
+    createdAt:editingId?(DB.clients.find(x=>x.id===editingId)||{}).createdAt:new Date().toISOString()
+  };
+  if(editingId){DB.clients=DB.clients.map(c=>c.id===editingId?obj:c);}
+  else{DB.clients.push(obj);}
+  saveDB();closeModal('clientModal');
+  renderCRM();renderDashboard();
+  toast(currentLang==='ar'?'تم الحفظ':'Saved!');
+}
+
+function editClient(id){closeModal('clientDetailModal');openClientModal(id);}
+function deleteClient(id){
+  showConfirm(t('confirmDel'),()=>{
+    DB.clients=DB.clients.filter(c=>c.id!==id);
+    saveDB();renderCRM();renderDashboard();
+    closeModal('clientDetailModal');
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+function openClientDetail(id){
+  const c=DB.clients.find(x=>x.id===id);
+  if(!c)return;
+  currentClientId=id;
+  document.getElementById('cdName').textContent=c.name;
+  const body=document.getElementById('clientDetailBody');
+  body.innerHTML=`
+    <div class="grid-2" style="gap:12px;margin-bottom:16px;">
+      <div class="stat-card" style="padding:14px;">
+        <div class="stat-label">${t('status')}</div>
+        <div style="margin-top:6px;">${statusBadge(c.status)}</div>
+      </div>
+      <div class="stat-card" style="padding:14px;">
+        <div class="stat-label">${t('leadScore')}</div>
+        <div class="stat-value" style="font-size:1.2rem;">${c.score||0}/10</div>
+      </div>
+      <div class="stat-card" style="padding:14px;">
+        <div class="stat-label">${t('revenue')}</div>
+        <div class="stat-value" style="font-size:1.2rem;">$${numFmt(c.revenue||0)}</div>
+      </div>
+      <div class="stat-card" style="padding:14px;">
+        <div class="stat-label">${t('profit')}</div>
+        <div class="stat-value" style="font-size:1.2rem;color:var(--success);">$${numFmt(c.profit||0)}</div>
+      </div>
+    </div>
+    <div style="font-size:0.85rem;color:var(--text2);margin-bottom:6px;">${t('phone')}: <b style="color:var(--text);">${esc(c.phone)}</b></div>
+    <div style="font-size:0.85rem;color:var(--text2);margin-bottom:6px;">${t('industry')}: <b style="color:var(--text);">${esc(c.industry)}</b></div>
+    <div style="font-size:0.85rem;color:var(--text2);margin-bottom:6px;">${t('email')}: <b style="color:var(--text);">${esc(c.email||'—')}</b></div>
+    <div style="font-size:0.85rem;color:var(--text2);margin-bottom:6px;">${t('adBudget')}: <b style="color:var(--accent);">$${numFmt(c.budget||0)}</b></div>
+    <div style="font-size:0.85rem;color:var(--text2);margin-bottom:14px;">${t('moneyOutside')}: <b style="color:var(--danger);">$${numFmt(c.outside||0)}</b></div>
+    ${c.notes?`<div class="note-card"><div class="note-text">${esc(c.notes)}</div></div>`:''}
+  `;
+  openModal('clientDetailModal');
+}
+function editClientFromDetail(){closeModal('clientDetailModal');openClientModal(currentClientId);}
+function deleteClientFromDetail(){deleteClient(currentClientId);}
+
+// ════════════════════════════════════════════════════════
+//  ADS MANAGER
+// ════════════════════════════════════════════════════════
+function renderAds(){
+  const grid=document.getElementById('adsGrid');
+  if(!grid)return;
+  if(DB.ads.length===0){grid.innerHTML='<div style="color:var(--text2);grid-column:1/-1;">'+t('noAds')+'</div>';return;}
+  grid.innerHTML=DB.ads.map(a=>`
+    <div class="ad-card ${a.winner=='1'?'winner':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="font-size:0.95rem;font-weight:700;">${esc(a.name)}</div>
+          <div style="font-size:0.78rem;color:var(--text2);">${esc(a.client)} · ${esc(a.platform)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          ${a.winner=='1'?'<span class="winner-badge">⭐ '+t('winner')+'</span>':''}
+          ${statusBadge(a.status)}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;text-align:center;">
+        <div style="background:var(--bg2);border-radius:8px;padding:8px;">
+          <div style="font-size:0.7rem;color:var(--text2);">${t('budget')}</div>
+          <div style="font-weight:700;color:var(--accent);">$${numFmt(a.budget||0)}</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:8px;">
+          <div style="font-size:0.7rem;color:var(--text2);">${t('videos')}</div>
+          <div style="font-weight:700;">${a.videos||0}</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:8px;">
+          <div style="font-size:0.7rem;color:var(--text2);">${t('designs')}</div>
+          <div style="font-weight:700;">${a.designs||0}</div>
+        </div>
+      </div>
+      ${a.notes?`<div style="font-size:0.78rem;color:var(--text2);margin-bottom:10px;">${esc(a.notes)}</div>`:''}
+      <div style="display:flex;gap:6px;justify-content:flex-end;">
+        <button class="btn btn-ghost btn-sm" onclick="toggleAdWinner('${a.id}')">${a.winner=='1'?'★ '+t('winner'):'☆ '+t('winner')}</button>
+        <button class="btn btn-ghost btn-sm" onclick="openAdModal('${a.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteAd('${a.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAdModal(id){
+  editingId=id||null;
+  if(id){
+    const a=DB.ads.find(x=>x.id===id);
+    if(!a)return;
+    document.getElementById('adModalTitle').textContent=t('edit')+' — '+a.name;
+    document.getElementById('ad-name').value=a.name||'';
+    document.getElementById('ad-client').value=a.client||'';
+    document.getElementById('ad-platform').value=a.platform||'Facebook';
+    document.getElementById('ad-budget').value=a.budget||'';
+    document.getElementById('ad-videos').value=a.videos||'';
+    document.getElementById('ad-designs').value=a.designs||'';
+    document.getElementById('ad-status').value=a.status||'Running';
+    document.getElementById('ad-winner').value=a.winner||'0';
+    document.getElementById('ad-notes').value=a.notes||'';
+  } else {
+    document.getElementById('adModalTitle').textContent=t('addAdSet');
+    ['ad-name','ad-client','ad-budget','ad-videos','ad-designs','ad-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ad-platform').value='Facebook';
+    document.getElementById('ad-status').value='Running';
+    document.getElementById('ad-winner').value='0';
+  }
+  openModal('adModal');
+}
+
+function saveAd(){
+  const name=document.getElementById('ad-name').value.trim();
+  if(!name){toast(t('name')+' required','error');return;}
+  const obj={
+    id:editingId||uid(),
+    name,client:document.getElementById('ad-client').value.trim(),
+    platform:document.getElementById('ad-platform').value,
+    budget:parseFloat(document.getElementById('ad-budget').value)||0,
+    videos:parseInt(document.getElementById('ad-videos').value)||0,
+    designs:parseInt(document.getElementById('ad-designs').value)||0,
+    status:document.getElementById('ad-status').value,
+    winner:document.getElementById('ad-winner').value,
+    notes:document.getElementById('ad-notes').value.trim()
+  };
+  if(editingId){DB.ads=DB.ads.map(a=>a.id===editingId?obj:a);}
+  else{DB.ads.push(obj);}
+  saveDB();closeModal('adModal');renderAds();
+  toast(currentLang==='ar'?'تم الحفظ':'Saved!');
+}
+
+function toggleAdWinner(id){
+  DB.ads=DB.ads.map(a=>a.id===id?{...a,winner:a.winner=='1'?'0':'1'}:a);
+  saveDB();renderAds();
+}
+function deleteAd(id){
+  showConfirm(t('confirmDel'),()=>{
+    DB.ads=DB.ads.filter(a=>a.id!==id);
+    saveDB();renderAds();
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  MEDIA PLAN
+// ════════════════════════════════════════════════════════
+function renderMedia(){
+  const tbody=document.getElementById('mediaBody');
+  if(!tbody)return;
+  tbody.innerHTML=DB.media.map(d=>`
+    <tr>
+      <td class="media-day">${t('day')} ${d.day}</td>
+      <td>
+        <select class="form-group-sm" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:0.82rem;" onchange="updateMedia(${d.day},'platform',this.value)">
+          ${['Facebook','Instagram','TikTok','Google','YouTube','Snapchat'].map(p=>`<option ${d.platform===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="number" value="${d.budget||0}" style="width:90px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:0.82rem;" onchange="updateMedia(${d.day},'budget',this.value)" oninput="updateMedia(${d.day},'budget',this.value)"></td>
+      <td><input type="text" value="${esc(d.content||'')}" placeholder="${t('content')}..." style="min-width:140px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:0.82rem;" onchange="updateMedia(${d.day},'content',this.value)"></td>
+      <td><input type="text" value="${esc(d.objective||'')}" placeholder="${t('objective')}..." style="min-width:120px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:0.82rem;" onchange="updateMedia(${d.day},'objective',this.value)"></td>
+    </tr>
+  `).join('');
+  calcMediaTotal();
+}
+
+function updateMedia(day,field,val){
+  const idx=DB.media.findIndex(d=>d.day===day);
+  if(idx>=0){
+    DB.media[idx][field]=field==='budget'?(parseFloat(val)||0):val;
+    saveDB();
+  }
+  calcMediaTotal();
+}
+
+function calcMediaTotal(){
+  const total=DB.media.reduce((s,d)=>s+(parseFloat(d.budget)||0),0);
+  const el=document.getElementById('mediaTotalBudget');
+  if(el)el.textContent='$'+numFmt(total);
+}
+
+// ════════════════════════════════════════════════════════
+//  TEAM
+// ════════════════════════════════════════════════════════
+function renderTeam(){
+  const grid=document.getElementById('teamGrid');
+  if(!grid)return;
+  if(DB.team.length===0){grid.innerHTML='<div style="color:var(--text2);">'+t('noTeam')+'</div>';return;}
+  grid.innerHTML=DB.team.map(m=>`
+    <div class="team-card">
+      <div class="team-avatar">${(m.name||'?')[0].toUpperCase()}</div>
+      <div class="team-info">
+        <div class="team-name">${esc(m.name)}</div>
+        <div class="team-role">${esc(m.role)}</div>
+        <div style="margin-top:6px;">${statusBadge(m.status)}</div>
+        <div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">${esc(m.email||'')} ${m.phone?'· '+esc(m.phone):''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="deleteTeamMember('${m.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+  // Tasks
+  renderTasks();
+}
+
+function openTeamModal(){editingId=null;['tm-name','tm-role','tm-email','tm-phone'].forEach(id=>document.getElementById(id).value='');openModal('teamModal');}
+function saveTeamMember(){
+  const name=document.getElementById('tm-name').value.trim();
+  if(!name){toast(t('name')+' required','error');return;}
+  DB.team.push({id:uid(),name,role:document.getElementById('tm-role').value.trim(),email:document.getElementById('tm-email').value.trim(),phone:document.getElementById('tm-phone').value.trim(),status:document.getElementById('tm-status').value});
+  saveDB();closeModal('teamModal');renderTeam();renderDashboard();
+  toast(currentLang==='ar'?'تم الإضافة':'Added!');
+}
+function deleteTeamMember(id){
+  showConfirm(t('confirmDel'),()=>{
+    DB.team=DB.team.filter(m=>m.id!==id);
+    saveDB();renderTeam();renderDashboard();
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+function renderTasks(){
+  const tbody=document.getElementById('tasksBody');
+  if(!tbody)return;
+  if(DB.tasks.length===0){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px;">'+t('noTasks')+'</td></tr>';return;}
+  tbody.innerHTML=DB.tasks.map(tk=>`
+    <tr>
+      <td>${esc(tk.task)}</td>
+      <td>${esc(tk.assignedTo)}</td>
+      <td>${statusBadge(tk.status)}</td>
+      <td>${priorityBadge(tk.priority)}</td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <select style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.78rem;" onchange="updateTaskStatus('${tk.id}',this.value)">
+            ${['To Do','In Progress','Done'].map(s=>`<option ${tk.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTask('${tk.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openTaskModal(){
+  const sel=document.getElementById('tk-assign');
+  sel.innerHTML=DB.team.map(m=>`<option>${esc(m.name)}</option>`).join('')||'<option>—</option>';
+  document.getElementById('tk-task').value='';
+  openModal('taskModal');
+}
+function saveTask(){
+  const task=document.getElementById('tk-task').value.trim();
+  if(!task){toast(t('task')+' required','error');return;}
+  DB.tasks.push({id:uid(),task,assignedTo:document.getElementById('tk-assign').value,priority:document.getElementById('tk-priority').value,status:document.getElementById('tk-status').value});
+  saveDB();closeModal('taskModal');renderTasks();renderDashboard();
+  toast(currentLang==='ar'?'تم الإضافة':'Added!');
+}
+function updateTaskStatus(id,status){
+  DB.tasks=DB.tasks.map(t=>t.id===id?{...t,status}:t);
+  saveDB();renderDashboard();
+}
+function deleteTask(id){
+  showConfirm(t('confirmDel'),()=>{
+    DB.tasks=DB.tasks.filter(t=>t.id!==id);
+    saveDB();renderTasks();renderDashboard();
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  SALES
+// ════════════════════════════════════════════════════════
+const leadStages=['New','Contacted','Qualified','Proposal','Closed Won','Closed Lost'];
+function renderSales(){
+  const kanban=document.getElementById('salesKanban');
+  if(!kanban)return;
+  const stageColors={New:'info',Contacted:'warning',Qualified:'info',Proposal:'warning','Closed Won':'success','Closed Lost':'danger'};
+  kanban.style.gridTemplateColumns='repeat(auto-fill,minmax(260px,1fr))';
+  kanban.innerHTML=leadStages.map(stage=>{
+    const items=DB.leads.filter(l=>l.status===stage);
+    return `
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-weight:700;font-size:0.88rem;">${stage}</div>
+          <span class="badge badge-${stageColors[stage]||'gray'}">${items.length}</span>
+        </div>
+        ${items.length===0?`<div style="color:var(--text2);font-size:0.8rem;text-align:center;padding:16px 0;">${t('noLeads')}</div>`:
+        items.map(l=>`
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
+            <div style="font-weight:600;font-size:0.88rem;margin-bottom:4px;">${esc(l.name)}</div>
+            <div style="font-size:0.75rem;color:var(--text2);">📞 ${esc(l.phone)} · 📣 ${esc(l.source)}</div>
+            ${l.notes?`<div style="font-size:0.75rem;color:var(--text2);margin-top:4px;">${esc(l.notes)}</div>`:''}
+            <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">
+              ${leadStages.filter(s=>s!==stage).map(s=>`<button class="btn btn-ghost" style="padding:2px 8px;font-size:0.7rem;border-radius:6px;" onclick="moveLead('${l.id}','${s}')">${s}</button>`).join('')}
+              <button class="btn btn-danger" style="padding:2px 8px;font-size:0.7rem;border-radius:6px;" onclick="deleteLead('${l.id}')">🗑️</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+function openLeadModal(){['ld-name','ld-phone','ld-notes'].forEach(id=>document.getElementById(id).value='');openModal('leadModal');}
+function saveLead(){
+  const name=document.getElementById('ld-name').value.trim();
+  if(!name){toast(t('name')+' required','error');return;}
+  DB.leads.push({id:uid(),name,phone:document.getElementById('ld-phone').value.trim(),source:document.getElementById('ld-source').value,status:document.getElementById('ld-status').value,notes:document.getElementById('ld-notes').value.trim()});
+  saveDB();closeModal('leadModal');renderSales();renderDashboard();
+  toast(currentLang==='ar'?'تم الإضافة':'Added!');
+}
+function moveLead(id,status){
+  DB.leads=DB.leads.map(l=>l.id===id?{...l,status}:l);
+  saveDB();renderSales();
+  if(status==='Closed Won'){celebrate();toast(currentLang==='ar'?'🎉 تهانينا! صفقة مُغلقة!':'🎉 Deal Closed!');}
+}
+function deleteLead(id){
+  showConfirm(t('confirmDel'),()=>{
+    DB.leads=DB.leads.filter(l=>l.id!==id);
+    saveDB();renderSales();renderDashboard();
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  CONTENT
+// ════════════════════════════════════════════════════════
+function renderContent(){
+  const tbody=document.getElementById('contentBody');
+  if(!tbody)return;
+  if(DB.content.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:20px;">'+t('noContent')+'</td></tr>';return;}
+  tbody.innerHTML=DB.content.map(c=>`
+    <tr>
+      <td><b>${esc(c.title)}</b></td>
+      <td>${contentTypeBadge(c.type)}</td>
+      <td>${esc(c.platform)}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td>${esc(c.client||'—')}</td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <select style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:0.78rem;" onchange="updateContentStatus('${c.id}',this.value)">
+            ${['Idea','In Progress','Review','Published'].map(s=>`<option ${c.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteContent('${c.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openContentModal(){['ct-title','ct-client'].forEach(id=>document.getElementById(id).value='');openModal('contentModal');}
+function saveContent(){
+  const title=document.getElementById('ct-title').value.trim();
+  if(!title){toast(t('title')+' required','error');return;}
+  DB.content.push({id:uid(),title,type:document.getElementById('ct-type').value,platform:document.getElementById('ct-platform').value,status:document.getElementById('ct-status').value,client:document.getElementById('ct-client').value.trim()});
+  saveDB();closeModal('contentModal');renderContent();
+  toast(currentLang==='ar'?'تم الإضافة':'Added!');
+}
+function updateContentStatus(id,status){
+  DB.content=DB.content.map(c=>c.id===id?{...c,status}:c);
+  saveDB();
+}
+function deleteContent(id){
+  showConfirm(t('confirmDel'),()=>{
+    DB.content=DB.content.filter(c=>c.id!==id);
+    saveDB();renderContent();
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  GOALS
+// ════════════════════════════════════════════════════════
+function renderGoals(){
+  const grid=document.getElementById('goalsGrid');
+  if(!grid)return;
+  if(DB.goals.length===0){grid.innerHTML='<div style="color:var(--text2);">'+t('noClients')+'</div>';return;}
+  grid.innerHTML=DB.goals.map(g=>{
+    const pct=Math.min(100,Math.round((g.current/g.target)*100));
+    const done=pct>=100;
+    return `
+      <div class="goal-card ${done?'':''}">
+        ${done?`<div style="position:absolute;top:10px;right:14px;font-size:1.2rem;">🎉</div>`:''}
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:1.6rem;">${g.emoji||'🎯'}</div>
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="openEditGoal('${g.id}')">✏️</button>
+            <button class="btn btn-danger btn-icon btn-sm" onclick="deleteGoal('${g.id}')">🗑️</button>
+          </div>
+        </div>
+        <div class="goal-title">${esc(g.title)}</div>
+        <div class="goal-meta">${g.category}</div>
+        <div class="goal-numbers">
+          <div class="goal-current">${numFmt(g.current)}</div>
+          <div class="goal-target">/ ${numFmt(g.target)}</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${done?'var(--success)':''}"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:0.78rem;color:var(--text2);">
+          <span>${pct}%</span>
+          <span>${done?'✅ '+t('completed'):'🎯 '+t('target')+': '+numFmt(g.target)}</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button class="btn btn-ghost btn-sm" onclick="adjustGoal('${g.id}',-1)">−</button>
+          <button class="btn btn-primary btn-sm" onclick="adjustGoal('${g.id}',1)">+</button>
+          <input type="number" placeholder="${t('current')}" style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:0.82rem;" onchange="setGoalCurrent('${g.id}',this.value)">
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openGoalModal(){
+  editingId=null;
+  ['gl-title','gl-current','gl-target','gl-emoji'].forEach(id=>document.getElementById(id).value='');
+  openModal('goalModal');
+}
+function openEditGoal(id){
+  editingId=id;
+  const g=DB.goals.find(x=>x.id===id);
+  if(!g)return;
+  document.getElementById('gl-title').value=g.title||'';
+  document.getElementById('gl-current').value=g.current||0;
+  document.getElementById('gl-target').value=g.target||0;
+  document.getElementById('gl-cat').value=g.category||'Clients';
+  document.getElementById('gl-emoji').value=g.emoji||'';
+  openModal('goalModal');
+}
+function saveGoal(){
+  const title=document.getElementById('gl-title').value.trim();
+  if(!title){toast(t('goalTitle')+' required','error');return;}
+  const obj={id:editingId||uid(),title,current:parseFloat(document.getElementById('gl-current').value)||0,target:parseFloat(document.getElementById('gl-target').value)||10,category:document.getElementById('gl-cat').value,emoji:document.getElementById('gl-emoji').value||'🎯'};
+  if(editingId){DB.goals=DB.goals.map(g=>g.id===editingId?obj:g);}
+  else{DB.goals.push(obj);}
+  saveDB();closeModal('goalModal');renderGoals();
+  toast(currentLang==='ar'?'تم الحفظ':'Saved!');
+}
+function adjustGoal(id,delta){
+  DB.goals=DB.goals.map(g=>{
+    if(g.id===id){
+      const newVal=Math.max(0,g.current+delta);
+      if(newVal>=g.target&&g.current<g.target)celebrate();
+      return{...g,current:newVal};
+    }
+    return g;
+  });
+  saveDB();renderGoals();
+}
+function setGoalCurrent(id,val){
+  DB.goals=DB.goals.map(g=>{
+    if(g.id===id){
+      const newVal=Math.max(0,parseFloat(val)||0);
+      if(newVal>=g.target&&g.current<g.target)celebrate();
+      return{...g,current:newVal};
+    }
+    return g;
+  });
+  saveDB();renderGoals();
+}
+function deleteGoal(id){
+  confirm(t('confirmDel'),()=>{
+    DB.goals=DB.goals.filter(g=>g.id!==id);
+    saveDB();renderGoals();
+    toast(currentLang==='ar'?'تم الحذف':'Deleted!','error');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  PERSONAL
+// ════════════════════════════════════════════════════════
+const prayers=['fajr','duhr','asr','maghrib','isha'];
+function renderPersonal(){
+  setDashDate();
+  // Check reset
+  const today=new Date().toDateString();
+  if(DB.personal.lastReset!==today){
+    // Don't auto-reset, just set flag for first use
+    if(!DB.personal.lastReset){DB.personal.lastReset=today;saveDB();}
+  }
+  // Prayers
+  const pt=document.getElementById('prayerTracker');
+  if(pt){
+    pt.innerHTML=prayers.map(p=>`
+      <div class="tracker-item">
+        <div class="tracker-label">${t(p)}</div>
+        <div class="tracker-controls">
+          <button class="btn btn-sm ${DB.personal.prayers[p]?'btn-success':'btn-ghost'}" style="min-width:90px;" onclick="togglePrayer('${p}')">
+            ${DB.personal.prayers[p]?'✅ '+t('donePrayer'):'⬜ '+t('pendingPrayer')}
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+  // Quran & Charity
+  ['quranPages','verses','charityAmt','charityActs'].forEach(k=>{
+    const el=document.getElementById(k);
+    if(el)el.textContent=DB.personal[k]||0;
+  });
+  // Weekly progress
+  const wp=document.getElementById('weeklyProgress');
+  if(wp){
+    const prayersDone=Object.values(DB.personal.prayers).filter(Boolean).length;
+    const pct=Math.round((prayersDone/5)*100);
+    wp.innerHTML=`
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;">
+          <span>${t('prayers')}</span><span>${prayersDone}/5</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pct===100?'var(--success)':''}"></div></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;">
+          <span>${t('pagesRead')}</span><span>${DB.personal.quranPages||0}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,(DB.personal.quranPages||0)*5)}%"></div></div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;">
+          <span>${t('charityActs')}</span><span>${DB.personal.charityActs||0}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,(DB.personal.charityActs||0)*10)}%"></div></div>
+      </div>
+      ${pct===100?`<div style="text-align:center;margin-top:14px;color:var(--success);font-weight:700;font-size:0.9rem;">🌟 ${currentLang==='ar'?'أتممت صلواتك اليوم!':'All prayers done today!'}</div>`:''}
+    `;
+  }
+}
+
+function togglePrayer(p){
+  DB.personal.prayers[p]=DB.personal.prayers[p]?0:1;
+  saveDB();
+  const allDone=Object.values(DB.personal.prayers).every(Boolean);
+  if(allDone){celebrate();toast(currentLang==='ar'?'🌟 أحسنت! أتممت جميع الصلوات!':'🌟 All 5 prayers done!');}
+  renderPersonal();
+}
+function adjustTracker(key,delta){
+  DB.personal[key]=Math.max(0,(DB.personal[key]||0)+delta);
+  saveDB();renderPersonal();
+}
+function resetPersonal(){
+  confirm(currentLang==='ar'?'هل تريد إعادة تعيين تتبع اليوم؟':'Reset today\'s personal tracker?',()=>{
+    DB.personal={prayers:{fajr:0,duhr:0,asr:0,maghrib:0,isha:0},quranPages:0,verses:0,charityAmt:0,charityActs:0,lastReset:new Date().toDateString()};
+    saveDB();renderPersonal();
+    toast(currentLang==='ar'?'تم إعادة التعيين':'Reset done!');
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════
+function numFmt(n){
+  const num=parseFloat(n)||0;
+  if(num>=1000000)return(num/1000000).toFixed(1)+'M';
+  if(num>=1000)return(num/1000).toFixed(1)+'K';
+  return num.toLocaleString();
+}
+function esc(str){
+  if(!str)return'';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setText(id,val){
+  const el=document.getElementById(id);
+  if(el)el.textContent=val;
+}
+function statusBadge(status){
+  const map={
+    'Active':'success','active':'success',
+    'Inactive':'danger','inactive':'danger',
+    'Lead':'info','lead':'info',
+    'Pending':'warning','pending':'warning',
+    'Running':'success','Paused':'warning',
+    'Draft':'gray','Completed':'info',
+    'To Do':'info','In Progress':'warning','Done':'success',
+    'New':'info','Contacted':'warning','Qualified':'success',
+    'Proposal':'warning','Closed Won':'success','Closed Lost':'danger',
+    'Idea':'gray','Review':'warning','Published':'success',
+    'On Leave':'warning','Busy':'warning',
+    'High':'danger','Medium':'warning','Low':'success'
+  };
+  const cls=map[status]||'gray';
+  return`<span class="badge badge-${cls}">${esc(status)}</span>`;
+}
+function priorityBadge(p){return statusBadge(p);}
+function contentTypeBadge(type){
+  const map={Video:'info',Image:'success',Story:'warning',Reel:'info',Blog:'gray',Caption:'warning'};
+  return`<span class="badge badge-${map[type]||'gray'}">${esc(type)}</span>`;
+}
+</script>
+</body>
+</html>
